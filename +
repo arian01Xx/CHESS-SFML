@@ -1,0 +1,147 @@
+#include <SFML/Window/Event.hpp>
+#include <SFML/Graphics.hpp>
+#include <iostream>
+#include <utility>
+#include <vector>
+
+#include "domain.hpp"
+#include "global.hpp"
+
+struct PIECE{
+    int x, y; //fila - columna
+    bool team;
+    sf::Texture image;
+    PIECE(bool _team): team(_team) {}
+    PIECE(int _x, int _y): x(_x), y(_y) {}
+    PIECE(int _x, int _y, sf::Texture _image, bool _team): x(_x), y(_y), 
+                                                           image(_image), team(_team) {}
+
+    sf::Sprite init(DOMAIN& D){
+        return D.scale(image,y,x); //SFML procesa en -> columna - fila
+    }
+
+    void paint(sf::RenderWindow& window, sf::Sprite figure){
+        window.draw(figure);
+    }
+};
+
+struct HORSE: PIECE{
+    HORSE(int& row, int& col, sf::Texture image, bool _team): 
+        PIECE(row,col,image,_team){}
+
+
+};
+
+struct RULE{
+
+};
+
+struct GAME{
+
+};
+
+struct RENDERING{
+
+};
+
+int main(){
+
+    DOMAIN D;
+
+    sf::RenderWindow window{
+        sf::VideoMode({
+            static_cast<unsigned>(TILE*D.col),
+            static_cast<unsigned>(TILE*D.row)
+        }), "CHESS"
+    };
+
+    window.setFramerateLimit(50);
+
+
+
+    /**********************************************/
+    /*CREACION DEL TABLERO UNA VEZ*/
+    for(int i=0; i<8; i++){
+        for(int j=0; j<8; j++){
+            if((i+j)%2==0) D.createBottom(window, j, i, sf::Color::White);
+            else D.createBottom(window, j, i, sf::Color(0,100,0));
+        }
+    }
+    /**********************************************/
+
+    sf::Texture HorseW;
+    if(!HorseW.loadFromFile("piezas/horseW.png")){
+        std::cerr<<"FAIL OPEN HORSE WHITE"<<std::endl;
+    }
+
+    int rowH=3, colH=3;
+    HORSE HW(rowH, colH, HorseW, true);
+    board[rowH][colH]=Board::WHITE;
+    sf::Sprite HorseWhite=HW.init(D);
+
+    while(window.isOpen()){
+        while(const std::optional event=window.pollEvent()){
+            if(event->is<sf::Event::Closed>()) window.close();
+            if(event->is<sf::Event::MouseButtonPressed>()){
+                if(event->getIf<sf::Event::MouseButtonPressed>()->button==
+                   sf::Mouse::Button::Left){
+                    dragging=true;
+                    lastMouse=sf::Mouse::getPosition(window);
+                }
+            }
+            if(event->is<sf::Event::MouseButtonReleased>()){
+                if(event->getIf<sf::Event::MouseButtonReleased>()->button==
+                   sf::Mouse::Button::Left){
+                    dragging=false;
+                }
+            }
+            if(const auto* mouseButtonPressed=event->getIf<sf::Event::MouseButtonPressed>()){
+                if(mouseButtonPressed->button==sf::Mouse::Button::Left){
+                    col=mouseButtonPressed->position.x;
+                    row=mouseButtonPressed->position.y;
+
+                    PRINT<<"COORDENADAS MOUSE"<<END;
+                    PRINT<<"col: "<<col<<" - row: "<<row<<END;
+
+                    auto newCoords=D.convertion(row, col);
+
+                    PRINT<<"COORDENADAS ENTERIZADAS"<<END;
+                    PRINT<<"col: "<<newCoords.second<<" - row: "<<newCoords.first<<END;
+
+                    //
+                }
+            }
+        }
+
+        window.clear();
+
+        for(auto& x: Boxes){
+            window.draw(x.box);
+        }
+
+        HW.paint(window,HorseWhite);
+
+        window.display();
+    }
+
+    return 0;
+}
+
+/*
+                     CLICK 1
+                     HAY PIEZA?
+                     guardar posicion original -> prePos=(6,2)
+                     calcular movimientos
+                     futureMoving (5.1, 5.3)
+
+                     CLICK 2
+                     esta dentro de futureMoving?
+                        NO-> ignorar
+                        Si
+                            newPos={5,1}
+                            moverPieza
+                                actualizar sprite
+                                actualizar Piece.x/y
+                                actualizar Board
+                    limpiar futureMoving
+                     * */
