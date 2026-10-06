@@ -1,0 +1,141 @@
+#ifndef PIECES_HPP
+#define PIECES_HPP
+
+#include <SFML/Window/Event.hpp>
+#include <SFML/Graphics.hpp>
+#include <iostream>
+#include <utility>
+#include <cassert>
+#include <vector>
+
+#include "domain.hpp"
+#include "global.hpp"
+
+struct PIECE{
+    int x, y; //fila - columna
+    bool team;
+    sf::Texture* image;
+
+    std::pair<int,int> prePos; //row - col
+    std::pair<int,int> actualPos; //row - col puedo usar newCoords normalmente
+    
+    PIECE(int _x, int _y, sf::Texture& _image, bool _team): x(_x), y(_y), 
+                                                           image(&_image), team(_team) {} 
+
+    sf::Sprite init(DOMAIN& D){
+        return D.scale(*image,y,x); //SFML procesa en -> columna - fila
+    }
+
+    void paint(sf::RenderWindow& window, sf::Sprite figure){
+        window.draw(figure);
+    }
+};
+
+struct HORSE: PIECE{
+    std::vector<int> inspect_row={2,1,-1,-2,-2,-1,1,2};
+    std::vector<int> inspect_col={-1,-2,-2,-1,1,2,2,1};
+
+    HORSE(int& _row, int& _col, sf::Texture& image, bool _team): 
+        PIECE(_row, _col, image,_team){
+        actualPos.first=_row;
+        actualPos.second=_col;
+    }
+
+    void inspect(){
+        PRINT<<"--------------------"<<END;
+        PRINT<<"POSSIBLES MOVING: "<<END;
+
+        for(int i=0; i<8; i++){
+            int _x=newCoords.first+inspect_row[i];
+            int _y=newCoords.second+inspect_col[i];
+            
+            if(_x>=0 && _x<8 && _y>=0 && _y<8 &&
+               board[_x][_y]==Board::NONE){
+
+                PRINT<<"Coordenada vacia numero: "<<i<<END;
+                PRINT<<"_x: "<<_x<<" - _y: "<<_y<<END;
+                possiblesMoving.push_back({_x,_y});
+            }else continue;
+        }
+    }
+};
+
+struct TOWER: PIECE{
+
+    TOWER(int& _row, int& _col, sf::Texture& image, bool _team): 
+        PIECE(_row, _col, image,_team){
+        actualPos.first=_row;
+        actualPos.second=_col;
+    }
+
+    void inspect(){
+
+    }
+};
+
+void initTextureHorse(){
+    sf::Texture HorseW; //INDICE 0 abajo izquierda [7][1]
+    if(!HorseW.loadFromFile("piezas/horseW.png")){
+        std::cerr<<"FAIL OPEN HORSE WHITE"<<std::endl;
+    }
+
+    TEXTURE_HORSE.push_back(HorseW);
+
+    sf::Texture HorseW1; //INDICE 1 abajo derecha [7][6]
+    if(!HorseW1.loadFromFile("piezas/horseW.png")){
+        std::cerr<<"FAIL OPEN HORSE WHITE"<<std::endl;
+    }
+
+    TEXTURE_HORSE.push_back(HorseW1);
+
+    sf::Texture HorseB; //INDICE 2 arriba izquierda [0][1]
+    if(!HorseB.loadFromFile("piezas/horseB.png")){
+        std::cerr<<"FAIL OPEN HORSE BLACK"<<std::endl;
+    }
+
+    TEXTURE_HORSE.push_back(HorseB); 
+
+    sf::Texture HorseB1; //INDICE 3 arriba derecha [0][6]
+    if(!HorseB1.loadFromFile("piezas/horseB.png")){
+        std::cerr<<"FAIL OPEN HORSE BLACK"<<std::endl;
+    }
+
+    TEXTURE_HORSE.push_back(HorseB1);
+}
+
+void initSpriteHorse(DOMAIN& D){
+    int seven=7, one=1;
+    HORSE HW(seven, one, TEXTURE_HORSE[0], true);
+    board[seven][one]=Board::WHITE;
+    sf::Sprite HorseWhite=HW.init(D);
+
+    OBJ_HORSE.push_back(HW);
+    SPRITE_HORSE.push_back(HorseWhite);
+
+    int six=6;
+    HORSE HW1(seven, six, TEXTURE_HORSE[1], true);
+    board[seven][six]=Board::WHITE;
+    sf::Sprite HorseWhite1=HW1.init(D);
+
+    OBJ_HORSE.push_back(HW1);
+    SPRITE_HORSE.push_back(HorseWhite1);
+
+    //0-1
+    int zero=0;
+    HORSE HB(zero, one, TEXTURE_HORSE[2], false);
+    board[zero][one]=Board::BLACK;
+    sf::Sprite HorseBlack=HB.init(D);
+
+    OBJ_HORSE.push_back(HB);
+    SPRITE_HORSE.push_back(HorseBlack);
+
+    //0-6
+    HORSE HB1(zero, six, TEXTURE_HORSE[3], false);
+    board[zero][six]=Board::BLACK;
+    sf::Sprite HorseBlack1=HB1.init(D);
+
+    OBJ_HORSE.push_back(HB1);
+    SPRITE_HORSE.push_back(HorseBlack1);
+}
+
+#endif

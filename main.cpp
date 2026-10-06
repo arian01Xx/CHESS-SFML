@@ -7,95 +7,12 @@
 
 #include "domain.hpp"
 #include "global.hpp"
+#include "pieces.hpp"
 
 /*
  __FUNCTION__
  __LINE__ estos dos para imprimir
  */
-
-struct PIECE{
-    int x, y; //fila - columna
-    bool team;
-    sf::Texture* image;
-    
-    PIECE(int _x, int _y, sf::Texture& _image, bool _team): x(_x), y(_y), 
-                                                           image(&_image), team(_team) {}
-
-    sf::Sprite init(DOMAIN& D){
-        return D.scale(*image,y,x); //SFML procesa en -> columna - fila
-    }
-
-    void paint(sf::RenderWindow& window, sf::Sprite figure){
-        window.draw(figure);
-    }
-};
-
-struct HORSE: PIECE{
-    std::pair<int,int> prePos; //row - col
-    std::pair<int,int> actualPos; //row - col puedo usar newCoords normalmente
-    
-    std::vector<int> inspect_row={2,1,-1,-2,-2,-1,1,2};
-    std::vector<int> inspect_col={-1,-2,-2,-1,1,2,2,1};
-
-    HORSE(int& _row, int& _col, sf::Texture& image, bool _team): 
-        PIECE(_row, _col, image,_team){
-        actualPos.first=_row;
-        actualPos.second=_col;
-    }
-
-    void inspect(){
-
-        PRINT<<"--------------------"<<END;
-        PRINT<<"POSSIBLES MOVING: "<<END;
-
-        for(int i=0; i<8; i++){
-            int _x=newCoords.first+inspect_row[i];
-            int _y=newCoords.second+inspect_col[i];
-            
-            if(_x>=0 && _x<8 && _y>=0 && _y<8 &&
-               board[_x][_y]==Board::NONE){
-
-                PRINT<<"Coordenada vacia numero: "<<i<<END;
-                PRINT<<"_x: "<<_x<<" - _y: "<<_y<<END;
-                possiblesMoving.push_back({_x,_y});
-            }else continue;
-        }
-    }
-};
-
-void initTextureHorse(){
-    sf::Texture HorseW;
-    if(!HorseW.loadFromFile("piezas/horseW.png")){
-        std::cerr<<"FAIL OPEN HORSE WHITE"<<std::endl;
-    }
-
-    TEXTURE_HORSE.push_back(HorseW);
-
-    sf::Texture HorseW1;
-    if(!HorseW1.loadFromFile("piezas/horseW.png")){
-        std::cerr<<"FAIL OPEN HORSE WHITE"<<std::endl;
-    }
-
-    TEXTURE_HORSE.push_back(HorseW1);
-}
-
-void initSpriteHorse(DOMAIN& D){
-    int rowHW=7, colHW=1;
-    HORSE HW(rowHW, colHW, TEXTURE_HORSE[0], true);
-    board[rowHW][colHW]=Board::WHITE;
-    sf::Sprite HorseWhite=HW.init(D);
-
-    OBJ_HORSE.push_back(HW);
-    SPRITE_HORSE.push_back(HorseWhite);
-
-    int colHW1=6;
-    HORSE HW1(rowHW, colHW1, TEXTURE_HORSE[1], true);
-    board[rowHW][colHW1]=Board::WHITE;
-    sf::Sprite HorseWhite1=HW1.init(D);
-
-    OBJ_HORSE.push_back(HW1);
-    SPRITE_HORSE.push_back(HorseWhite1);
-}
 
 struct RULE{
     int pre_x, pre_y; //se usa newCoords vector de coordenadas convertidas
@@ -103,6 +20,7 @@ struct RULE{
 
     bool click(){
         if(board[newCoords.first][newCoords.second]==Board::WHITE ||
+           board[newCoords.first][newCoords.second]==Board::BLACK ||
            board[newCoords.first][newCoords.second]==Board::NONE) return true;
         return false;
     }
@@ -125,6 +43,7 @@ struct RULE{
 
     //esta funcion deberia ir en RENDERING!!!!!
     void actualization(){
+        //SOLO ACTUALIZA PARA LA PIEZA CABALLO, NO PARA LAS DEMAS PIEZA!!!!
         //actualiza la posicion de la pieza
         for(int i=0; i<OBJ_HORSE.size(); i++){
             if(OBJ_HORSE[i].x==pieceSelected.first &&
@@ -204,6 +123,8 @@ int main(){
     initTextureHorse();
     initSpriteHorse(D);
 
+
+
     while(window.isOpen()){
         while(const std::optional event=window.pollEvent()){
             if(event->is<sf::Event::Closed>()) window.close();
@@ -239,7 +160,7 @@ int main(){
                     if(possiblesMoving.empty()){
                         if(R.click()){
                             pieceSelected=newCoords;
-                            R.calculated(); //se te da la libertad de usar pieceSelected o newCoords
+                            R.calculated();
                         }
                     }else{
                         if(R.SelectedNewPosition()) R.actualization();
@@ -255,8 +176,6 @@ int main(){
             OBJ_HORSE[i].paint(window, SPRITE_HORSE[i]);
         }
 
-        //HW.paint(window,HorseWhite);
-        //HW1.paint(window, HorseWhite1);
         RE.coloredFuture(window);
 
         window.display();
