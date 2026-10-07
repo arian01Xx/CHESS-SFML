@@ -1,5 +1,6 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Graphics.hpp>
+#include <algorithm>
 #include <iostream>
 #include <utility>
 #include <cassert>
@@ -43,11 +44,23 @@ struct RULE{
 
     //esta funcion deberia ir en RENDERING!!!!!
     void actualization(){
-        //SOLO ACTUALIZA PARA LA PIEZA CABALLO, NO PARA LAS DEMAS PIEZA!!!!
-        //actualiza la posicion de la pieza
         for(int i=0; i<OBJ_HORSE.size(); i++){
+
+            if(!OBJ_HORSE[i].alive) continue;
+
             if(OBJ_HORSE[i].x==pieceSelected.first &&
                OBJ_HORSE[i].y==pieceSelected.second){
+
+                //buscar pieza enemiga en la casilla destino
+                for(int j=0; j<OBJ_HORSE.size(); j++){
+                    if(i==j) continue;
+                    if(!OBJ_HORSE[j].alive) continue;
+                    if(OBJ_HORSE[j].x==new_x &&
+                       OBJ_HORSE[j].y==new_y &&
+                       OBJ_HORSE[j].team!=OBJ_HORSE[i].team) OBJ_HORSE[j].alive=false;
+                }
+
+                board[pre_x][pre_y]=Board::NONE;
 
                 OBJ_HORSE[i].x=new_x;
                 OBJ_HORSE[i].y=new_y;
@@ -56,12 +69,20 @@ struct RULE{
                 OBJ_HORSE[i].actualPos={new_x, new_y};
 
                 //aqui hay que tener cuidado para cuando se agreguen los negros
-                board[new_x][new_y]=Board::WHITE;
-                board[OBJ_HORSE[i].prePos.first][OBJ_HORSE[i].prePos.second]=Board::NONE;
-
+                if(OBJ_HORSE[i].team) board[new_x][new_y]=Board::WHITE;
+                else board[new_x][new_y]=Board::BLACK;
                 SPRITE_HORSE[i].setPosition(sf::Vector2f(250+CELL*new_y, 150+CELL*new_x));
             }
-        } 
+        }
+
+        for(int k=0; k<OBJ_HORSE.size(); k++){
+            PRINT << "HORSE[" << k << "] "
+            << "x=" << OBJ_HORSE[k].x
+            << " y=" << OBJ_HORSE[k].y
+            << " team=" << OBJ_HORSE[k].team
+            << " alive=" << OBJ_HORSE[k].alive
+            << END;
+        }
 
         possiblesMoving.clear();
     }
@@ -71,9 +92,50 @@ struct RULE{
         int _col=newCoords.second;
 
         for(auto& H: OBJ_HORSE){
-            if(_row==H.actualPos.first && 
+            if(H.alive &&
+               _row==H.actualPos.first && 
                _col==H.actualPos.second) H.inspect();
         }
+    }
+};
+
+struct GAME{
+    void Gaming(RULE& R){
+        //NO HAY PIEZA SELECCIONADA
+        if(possiblesMoving.empty()){
+            
+            if(R.click()){
+                pieceSelected=newCoords;
+                R.calculated();
+            }
+            return;
+        }
+
+        //YA HAY PIEZA SELECCIONADA
+        //1. el click corresponde a un movimiento valido?
+        if(R.SelectedNewPosition()){
+            R.actualization();
+            return;
+        }
+
+        //2. no es un movimiento valido
+        //es otra pieza de mi equipo?
+        if(board[newCoords.first][newCoords.second]==
+           board[pieceSelected.first][pieceSelected.second]){
+            //cancelar seleccion anterior
+            possiblesMoving.clear();
+
+            //seleccionar nueva pieza
+            pieceSelected=newCoords;
+
+            //calcular sus movimientos
+            R.calculated();
+
+            return;
+        }
+
+        //3. es NONE o una pieza enemiga pero no es movimiento valido
+        possiblesMoving.clear();
     }
 };
 
@@ -98,6 +160,7 @@ struct RENDERING{
 int main(){
 
     RULE R;
+    GAME G;
     DOMAIN D;
     RENDERING RE;
 
@@ -120,10 +183,11 @@ int main(){
     }
     /**********************************************/
 
-    initTextureHorse();
+    D.initTextureTower();
+    initSpriteTower(D);
+
+    D.initTextureHorse();
     initSpriteHorse(D);
-
-
 
     while(window.isOpen()){
         while(const std::optional event=window.pollEvent()){
@@ -156,15 +220,7 @@ int main(){
                     PRINT<<"COORDENADAS ENTERIZADAS"<<END;
                     PRINT<<"col: "<<newCoords.second<<" - row: "<<newCoords.first<<END;
 
-                    //RULE
-                    if(possiblesMoving.empty()){
-                        if(R.click()){
-                            pieceSelected=newCoords;
-                            R.calculated();
-                        }
-                    }else{
-                        if(R.SelectedNewPosition()) R.actualization();
-                    }
+                    G.Gaming(R);
                 }
             }
         }
@@ -172,8 +228,11 @@ int main(){
         window.clear();
 
         for(auto& x: Boxes){ window.draw(x.box); }
-        for(int i=0; i<OBJ_HORSE.size(); i++){
-            OBJ_HORSE[i].paint(window, SPRITE_HORSE[i]);
+        for(int i=0; i<OBJ_TOWER.size(); i++){ 
+            if(OBJ_TOWER[i].alive) OBJ_TOWER[i].paint(window, SPRITE_TOWER[i]); 
+        }
+        for(int i=0; i<OBJ_HORSE.size(); i++){ 
+            if(OBJ_HORSE[i].alive) OBJ_HORSE[i].paint(window, SPRITE_HORSE[i]); 
         }
 
         RE.coloredFuture(window);

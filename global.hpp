@@ -5,6 +5,7 @@
 
 struct Box;
 struct HORSE;
+struct TOWER;
 constexpr int TILE=6;
 constexpr int CELL=TILE*10;
 
@@ -33,3 +34,6 @@ std::vector<sf::Texture> TEXTURE_HORSE;
 std::vector<sf::Sprite> SPRITE_HORSE;
 std::vector<HORSE> OBJ_HORSE;
 
+std::vector<sf::Texture> TEXTURE_TOWER;
+std::vector<sf::Sprite> SPRITE_TOWER;
+std::vector<TOWER> OBJ_TOWER;

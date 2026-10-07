@@ -14,7 +14,6 @@
 struct PIECE{
     int x, y; //fila - columna
     bool team;
-    bool alive=true;
     sf::Texture* image;
 
     std::pair<int,int> prePos; //row - col
@@ -39,59 +38,8 @@ struct TOWER: PIECE{
             actualPos.second=_col;
     }
 
-    void restar(int& num){ num--; } //op==1
-
-    void sumar(int& num){ num++; } //op==2
-
-    void bucle(bool conditional, int& number, int& op){
-        while(conditional){
-            if(team && 
-               board[number][newCoords.second]==Board::NONE ||
-               board[number][newCoords.second]==Board::BLACK){
-                possiblesMoving.push_back({number, newCoords.second});
-            }else if(!team && 
-               board[number][newCoords.second]==Board::NONE ||
-               board[number][newCoords.second]==Board::WHITE){
-                possiblesMoving.push_back({number, newCoords.second});
-            }
-
-            if(op==1) restar(number);
-            else if(op==2) sumar(number);
-        }
-    }
-
-    void bucle1(bool conditional, int& number, int& op){
-        while(conditional){
-            if(team && 
-               board[newCoords.first][number]==Board::NONE ||
-               board[newCoords.first][number]==Board::BLACK){
-                possiblesMoving.push_back({newCoords.first, number});
-            }else if(!team && 
-               board[newCoords.first][number]==Board::NONE ||
-               board[newCoords.first][number]==Board::WHITE){
-                possiblesMoving.push_back({newCoords.first, number});
-            }
-            
-            if(op==1) restar(number);
-            else if(op==2) sumar(number);
-        }
-    }
-
-
     void inspect(){
-        int one=1, two=2;
 
-        int down=newCoords.first+1;
-        bucle(down<8, down, one);
-
-        int up=newCoords.first-1;
-        bucle(up>0, up, two);
-
-        int left=newCoords.second-1;
-        bucle1(left>0, left, one);
-
-        int right=newCoords.second+1;
-        bucle1(right<8, right, two);
     }
 };
 
@@ -106,22 +54,31 @@ struct HORSE: PIECE{
     }
 
     void inspect(){
+        PRINT<<"--------------------"<<END;
+        PRINT<<"POSSIBLES MOVING: "<<END;
+
         for(int i=0; i<8; i++){
             int _x=newCoords.first+inspect_row[i];
             int _y=newCoords.second+inspect_col[i];
             
-            if(team){ //de esta forma tambien considerarà a los enemigos
+            if(_team){ //de esta forma tambien considerarà a los enemigos
 
                 if(_x>=0 && _x<8 && _y>=0 && _y<8 &&
                    (board[_x][_y]==Board::NONE ||
                     board[_x][_y]==Board::BLACK)){
+
+                    PRINT<<"Coordenada vacia numero: "<<i<<END;
+                    PRINT<<"_x: "<<_x<<" - _y: "<<_y<<END;
                     possiblesMoving.push_back({_x,_y});
                 }else continue;
-            }else if(!team){
+            }else if(!_team){
 
                 if(_x>=0 && _x<8 && _y>=0 && _y<8 &&
                    (board[_x][_y]==Board::NONE ||
                     board[_x][_y]==Board::WHITE)){
+
+                    PRINT<<"Coordenada vacia numero: "<<i<<END;
+                    PRINT<<"_x: "<<_x<<" - _y: "<<_y<<END;
                     possiblesMoving.push_back({_x,_y});
                 }else continue;
             }
@@ -129,35 +86,34 @@ struct HORSE: PIECE{
     }
 };
 
-void initSpriteTower(DOMAIN& D){
-    int seven=7, zero=0;
-    TOWER TW(seven, zero, TEXTURE_TOWER[0], true);
-    board[seven][zero]=Board::WHITE;
-    sf::Sprite TowerWhite=TW.init(D);
+void initTextureHorse(){
+    sf::Texture HorseW; //INDICE 0 abajo izquierda [7][1]
+    if(!HorseW.loadFromFile("piezas/horseW.png")){
+        std::cerr<<"FAIL OPEN HORSE WHITE"<<std::endl;
+    }
 
-    OBJ_TOWER.push_back(TW);
-    SPRITE_TOWER.push_back(TowerWhite);
+    TEXTURE_HORSE.push_back(HorseW);
 
-    TOWER TW1(seven, seven, TEXTURE_TOWER[1], true);
-    board[seven][seven]=Board::WHITE;
-    sf::Sprite TowerWhite1=TW1.init(D);
+    sf::Texture HorseW1; //INDICE 1 abajo derecha [7][6]
+    if(!HorseW1.loadFromFile("piezas/horseW.png")){
+        std::cerr<<"FAIL OPEN HORSE WHITE"<<std::endl;
+    }
 
-    OBJ_TOWER.push_back(TW1);
-    SPRITE_TOWER.push_back(TowerWhite1);
+    TEXTURE_HORSE.push_back(HorseW1);
 
-    TOWER TB(zero, zero, TEXTURE_TOWER[2], false);
-    board[zero][zero]=Board::BLACK;
-    sf::Sprite TowerBlack=TB.init(D);
+    sf::Texture HorseB; //INDICE 2 arriba izquierda [0][1]
+    if(!HorseB.loadFromFile("piezas/horseB.png")){
+        std::cerr<<"FAIL OPEN HORSE BLACK"<<std::endl;
+    }
 
-    OBJ_TOWER.push_back(TB);
-    SPRITE_TOWER.push_back(TowerBlack);
+    TEXTURE_HORSE.push_back(HorseB); 
 
-    TOWER TB1(zero, seven, TEXTURE_TOWER[3], false);
-    board[zero][seven]=Board::BLACK;
-    sf::Sprite TowerBlack1=TB1.init(D);
+    sf::Texture HorseB1; //INDICE 3 arriba derecha [0][6]
+    if(!HorseB1.loadFromFile("piezas/horseB.png")){
+        std::cerr<<"FAIL OPEN HORSE BLACK"<<std::endl;
+    }
 
-    OBJ_TOWER.push_back(TB1);
-    SPRITE_TOWER.push_back(TowerBlack1);
+    TEXTURE_HORSE.push_back(HorseB1);
 }
 
 void initSpriteHorse(DOMAIN& D){
