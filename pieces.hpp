@@ -37,61 +37,55 @@ struct TOWER: PIECE{
         PIECE(_row, _col, image, _team){
             actualPos.first=_row;
             actualPos.second=_col;
-    }
-
-    void restar(int& num){ num--; } //op==1
-
-    void sumar(int& num){ num++; } //op==2
-
-    void bucle(bool conditional, int& number, int& op){
-        while(conditional){
-            if(team && 
-               board[number][newCoords.second]==Board::NONE ||
-               board[number][newCoords.second]==Board::BLACK){
-                possiblesMoving.push_back({number, newCoords.second});
-            }else if(!team && 
-               board[number][newCoords.second]==Board::NONE ||
-               board[number][newCoords.second]==Board::WHITE){
-                possiblesMoving.push_back({number, newCoords.second});
-            }
-
-            if(op==1) restar(number);
-            else if(op==2) sumar(number);
-        }
-    }
-
-    void bucle1(bool conditional, int& number, int& op){
-        while(conditional){
-            if(team && 
-               board[newCoords.first][number]==Board::NONE ||
-               board[newCoords.first][number]==Board::BLACK){
-                possiblesMoving.push_back({newCoords.first, number});
-            }else if(!team && 
-               board[newCoords.first][number]==Board::NONE ||
-               board[newCoords.first][number]==Board::WHITE){
-                possiblesMoving.push_back({newCoords.first, number});
-            }
-            
-            if(op==1) restar(number);
-            else if(op==2) sumar(number);
-        }
-    }
-
+    } 
 
     void inspect(){
-        int one=1, two=2;
+        int _i=newCoords.first;
+        int _j=newCoords.second;
 
-        int down=newCoords.first+1;
-        bucle(down<8, down, one);
+        //ABAJO
+        for(int r=_i+1; r<8; ++r){
+            if(board[r][_j]==Board::NONE){
+                possiblesMoving.push_back({r,_j});
+            }else{
+                if(board[r][_j]!=(team ? Board::WHITE : Board::BLACK))
+                    possiblesMoving.push_back({r, _j}); //captura enemiga
+                break;
+            }
+        }
 
-        int up=newCoords.first-1;
-        bucle(up>0, up, two);
+        //ARRIBA
+        for(int r=_i-1; r>=0; --r){
+            if(board[r][_j]==Board::NONE){
+                possiblesMoving.push_back({r,_j});
+            }else{
+                if(board[r][_j]!=(team ? Board::WHITE : Board::BLACK))
+                    possiblesMoving.push_back({r, _j}); //captura enemiga
+                break;
+            }
+        }
 
-        int left=newCoords.second-1;
-        bucle1(left>0, left, one);
+        //DERECHA
+        for(int c = _j + 1; c < 8; ++c){
+            if(board[_i][c] == Board::NONE){
+                possiblesMoving.push_back({_i, c});
+            }else{
+                if(board[_i][c] != (team ? Board::WHITE : Board::BLACK))
+                    possiblesMoving.push_back({_i, c});
+                break;
+            }
+        }
 
-        int right=newCoords.second+1;
-        bucle1(right<8, right, two);
+        //IZQUIERDA
+        for(int c = _j - 1; c >= 0; --c){
+            if(board[_i][c] == Board::NONE){
+                possiblesMoving.push_back({_i, c});
+            }else{
+                if(board[_i][c] != (team ? Board::WHITE : Board::BLACK))
+                    possiblesMoving.push_back({_i, c});
+                break;
+            }
+        }
     }
 };
 
@@ -129,9 +123,10 @@ struct HORSE: PIECE{
     }
 };
 
-void initSpriteTower(DOMAIN& D){
+void initSpriteTower(DOMAIN& D){ //2
     int seven=7, zero=0;
     TOWER TW(seven, zero, TEXTURE_TOWER[0], true);
+    board1[seven][zero]=PIB::_TOWER;
     board[seven][zero]=Board::WHITE;
     sf::Sprite TowerWhite=TW.init(D);
 
@@ -139,6 +134,7 @@ void initSpriteTower(DOMAIN& D){
     SPRITE_TOWER.push_back(TowerWhite);
 
     TOWER TW1(seven, seven, TEXTURE_TOWER[1], true);
+    board1[seven][seven]=PIB::_TOWER;
     board[seven][seven]=Board::WHITE;
     sf::Sprite TowerWhite1=TW1.init(D);
 
@@ -146,6 +142,7 @@ void initSpriteTower(DOMAIN& D){
     SPRITE_TOWER.push_back(TowerWhite1);
 
     TOWER TB(zero, zero, TEXTURE_TOWER[2], false);
+    board1[zero][zero]=PIB::_TOWER;
     board[zero][zero]=Board::BLACK;
     sf::Sprite TowerBlack=TB.init(D);
 
@@ -153,6 +150,7 @@ void initSpriteTower(DOMAIN& D){
     SPRITE_TOWER.push_back(TowerBlack);
 
     TOWER TB1(zero, seven, TEXTURE_TOWER[3], false);
+    board1[zero][seven]=PIB::_TOWER;
     board[zero][seven]=Board::BLACK;
     sf::Sprite TowerBlack1=TB1.init(D);
 
@@ -160,9 +158,10 @@ void initSpriteTower(DOMAIN& D){
     SPRITE_TOWER.push_back(TowerBlack1);
 }
 
-void initSpriteHorse(DOMAIN& D){
+void initSpriteHorse(DOMAIN& D){ //1
     int seven=7, one=1;
     HORSE HW(seven, one, TEXTURE_HORSE[0], true);
+    board1[seven][one]=PIB::_HORSE;
     board[seven][one]=Board::WHITE;
     sf::Sprite HorseWhite=HW.init(D);
 
@@ -171,6 +170,7 @@ void initSpriteHorse(DOMAIN& D){
 
     int six=6;
     HORSE HW1(seven, six, TEXTURE_HORSE[1], true);
+    board1[seven][six]=PIB::_HORSE;
     board[seven][six]=Board::WHITE;
     sf::Sprite HorseWhite1=HW1.init(D);
 
@@ -180,6 +180,7 @@ void initSpriteHorse(DOMAIN& D){
     //0-1
     int zero=0;
     HORSE HB(zero, one, TEXTURE_HORSE[2], false);
+    board1[zero][one]=PIB::_HORSE;
     board[zero][one]=Board::BLACK;
     sf::Sprite HorseBlack=HB.init(D);
 
@@ -188,6 +189,7 @@ void initSpriteHorse(DOMAIN& D){
 
     //0-6
     HORSE HB1(zero, six, TEXTURE_HORSE[3], false);
+    board1[zero][six]=PIB::_HORSE;
     board[zero][six]=Board::BLACK;
     sf::Sprite HorseBlack1=HB1.init(D);
 

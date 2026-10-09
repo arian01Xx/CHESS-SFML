@@ -42,8 +42,70 @@ struct RULE{
         return false;
     }
 
-    //esta funcion deberia ir en RENDERING!!!!!
     void actualization(){
+        if(board1[pieceSelected.first][pieceSelected.second]==PIB::_HORSE) actualizationHorse();
+        else if(board1[pieceSelected.first][pieceSelected.second]==PIB::_TOWER) actualizationTower();
+    }
+    void actualizationTower(){
+        for(int i=0; i<OBJ_TOWER.size(); i++){
+
+            if(!OBJ_TOWER[i].alive) continue;
+
+            if(OBJ_TOWER[i].x==pieceSelected.first &&
+               OBJ_TOWER[i].y==pieceSelected.second){
+
+                //buscar pieza enemiga en la casilla destino
+                if(board1[new_x][new_y]==PIB::_TOWER){
+                    for(auto& T: OBJ_TOWER){
+                        if(!T.alive) continue;
+                        
+                        if(T.x==new_x && T.y==new_y){
+                            if(T.team==OBJ_TOWER[i].team) return;
+                            T.alive=false;
+                            break;
+                        }
+                    }
+                }else if(board1[new_x][new_y]==PIB::_HORSE){
+                    for(std::size_t j=0; j<OBJ_HORSE.size(); ++j){
+                        if(j==static_cast<std::size_t>(i)) continue;
+
+                        auto& H=OBJ_HORSE[j];
+                        if(!H.alive) continue;
+
+                        if(H.x==new_x && H.y==new_y){
+                            if(H.team==OBJ_TOWER[i].team) return;
+
+                            H.alive=false;
+                            break;
+                        }
+                    }
+                }  
+
+                board1[pre_x][pre_y]=PIB::EMPTY;
+                board[pre_x][pre_y]=Board::NONE;
+
+                OBJ_TOWER[i].x=new_x;
+                OBJ_TOWER[i].y=new_y;
+
+                OBJ_TOWER[i].prePos={pre_x, pre_y};
+                OBJ_TOWER[i].actualPos={new_x, new_y};
+
+                if(OBJ_TOWER[i].team){
+                    board[new_x][new_y]=Board::WHITE;
+                    board1[new_x][new_y]=PIB::_TOWER;
+                }else{
+                    board[new_x][new_y]=Board::BLACK;
+                    board1[new_x][new_y]=PIB::_TOWER;
+                }
+                
+                SPRITE_TOWER[i].setPosition(sf::Vector2f(250+CELL*new_y, 150+CELL*new_x));
+            }
+        }
+
+        possiblesMoving.clear();
+    }
+
+    void actualizationHorse(){
         for(int i=0; i<OBJ_HORSE.size(); i++){
 
             if(!OBJ_HORSE[i].alive) continue;
@@ -52,14 +114,33 @@ struct RULE{
                OBJ_HORSE[i].y==pieceSelected.second){
 
                 //buscar pieza enemiga en la casilla destino
-                for(int j=0; j<OBJ_HORSE.size(); j++){
-                    if(i==j) continue;
-                    if(!OBJ_HORSE[j].alive) continue;
-                    if(OBJ_HORSE[j].x==new_x &&
-                       OBJ_HORSE[j].y==new_y &&
-                       OBJ_HORSE[j].team!=OBJ_HORSE[i].team) OBJ_HORSE[j].alive=false;
-                }
+                if(board1[new_x][new_y]==PIB::_TOWER){
+                    for(auto& T: OBJ_TOWER){
+                        if(!T.alive) continue;
+                        
+                        if(T.x==new_x && T.y==new_y){
+                            if(T.team==OBJ_HORSE[i].team) return;
+                            T.alive=false;
+                            break;
+                        }
+                    }
+                }else if(board1[new_x][new_y]==PIB::_HORSE){
+                    for(std::size_t j=0; j<OBJ_HORSE.size(); ++j){
+                        if(j==static_cast<std::size_t>(i)) continue;
 
+                        auto& H=OBJ_HORSE[j];
+                        if(!H.alive) continue;
+
+                        if(H.x==new_x && H.y==new_y){
+                            if(H.team==OBJ_HORSE[i].team) return;
+
+                            H.alive=false;
+                            break;
+                        }
+                    }
+                } 
+
+                board1[pre_x][pre_y]=PIB::EMPTY;
                 board[pre_x][pre_y]=Board::NONE;
 
                 OBJ_HORSE[i].x=new_x;
@@ -68,26 +149,22 @@ struct RULE{
                 OBJ_HORSE[i].prePos={pre_x, pre_y};
                 OBJ_HORSE[i].actualPos={new_x, new_y};
 
-                //aqui hay que tener cuidado para cuando se agreguen los negros
-                if(OBJ_HORSE[i].team) board[new_x][new_y]=Board::WHITE;
-                else board[new_x][new_y]=Board::BLACK;
+                if(OBJ_HORSE[i].team){
+                    board[new_x][new_y]=Board::WHITE;
+                    board1[new_x][new_y]=PIB::_HORSE;
+                }else{
+                    board[new_x][new_y]=Board::BLACK;
+                    board1[new_x][new_y]=PIB::_HORSE;
+                }
+                
                 SPRITE_HORSE[i].setPosition(sf::Vector2f(250+CELL*new_y, 150+CELL*new_x));
             }
-        }
-
-        for(int k=0; k<OBJ_HORSE.size(); k++){
-            PRINT << "HORSE[" << k << "] "
-            << "x=" << OBJ_HORSE[k].x
-            << " y=" << OBJ_HORSE[k].y
-            << " team=" << OBJ_HORSE[k].team
-            << " alive=" << OBJ_HORSE[k].alive
-            << END;
         }
 
         possiblesMoving.clear();
     }
 
-    void calculated(){
+    void calculatedHorse(){
         int _row=newCoords.first;
         int _col=newCoords.second;
 
@@ -97,13 +174,28 @@ struct RULE{
                _col==H.actualPos.second) H.inspect();
         }
     }
+
+    void calculatedTower(){
+        int _row=newCoords.first;
+        int _col=newCoords.second;
+
+        for(auto& T: OBJ_TOWER){
+            if(T.alive &&
+               _row==T.actualPos.first && 
+               _col==T.actualPos.second) T.inspect();
+        }
+    }
+
+    void calculated(){
+        if(board1[pieceSelected.first][pieceSelected.second]==PIB::_HORSE) calculatedHorse();
+        else if(board1[pieceSelected.first][pieceSelected.second]==PIB::_TOWER) calculatedTower();
+    }
 };
 
 struct GAME{
     void Gaming(RULE& R){
         //NO HAY PIEZA SELECCIONADA
-        if(possiblesMoving.empty()){
-            
+        if(possiblesMoving.empty()){ 
             if(R.click()){
                 pieceSelected=newCoords;
                 R.calculated();
@@ -111,30 +203,20 @@ struct GAME{
             return;
         }
 
-        //YA HAY PIEZA SELECCIONADA
-        //1. el click corresponde a un movimiento valido?
         if(R.SelectedNewPosition()){
             R.actualization();
             return;
         }
 
-        //2. no es un movimiento valido
-        //es otra pieza de mi equipo?
         if(board[newCoords.first][newCoords.second]==
            board[pieceSelected.first][pieceSelected.second]){
-            //cancelar seleccion anterior
             possiblesMoving.clear();
-
-            //seleccionar nueva pieza
             pieceSelected=newCoords;
-
-            //calcular sus movimientos
             R.calculated();
 
             return;
         }
 
-        //3. es NONE o una pieza enemiga pero no es movimiento valido
         possiblesMoving.clear();
     }
 };
