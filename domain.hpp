@@ -51,6 +51,68 @@ struct DOMAIN{
         return {r,c};
     }
 
+    void initTextureQueen(){
+        sf::Texture QueenW; //[7][3]
+        if(!QueenW.loadFromFile("piezas/queenW.png")){
+            std::cerr<<"FAIL OPEN KING WHITE"<<std::endl;
+        }
+
+        TEXTURE_QUEEN.push_back(QueenW);
+
+        sf::Texture QueenB; //[0][3]
+        if(!QueenB.loadFromFile("piezas/queenB.png")){
+            std::cerr<<"FAIL OPEN KING BLACK"<<std::endl;
+        }
+
+        TEXTURE_QUEEN.push_back(QueenB);
+    }
+
+    void initTextureKing(){
+        sf::Texture KingW; //[7][4]
+        if(!KingW.loadFromFile("piezas/kingW.png")){
+            std::cerr<<"FAIL OPEN KING WHITE"<<std::endl;
+        }
+
+        TEXTURE_KING.push_back(KingW);
+
+        sf::Texture KingB; //[0][4]
+        if(!KingB.loadFromFile("piezas/kingB.png")){
+            std::cerr<<"FAIL OPEN KING BLACK"<<std::endl;
+        }
+
+        TEXTURE_KING.push_back(KingB);
+    }
+
+    void initTextureAlfil(){
+        sf::Texture AlfilW; //[7][2]
+        if(!AlfilW.loadFromFile("piezas/alfilW.png")){
+            std::cerr<<"FAIL OPEN ALFIL WHITE"<<std::endl;
+        }
+
+        TEXTURE_ALFIL.push_back(AlfilW);
+
+        sf::Texture AlfilW1; //[7][5]
+        if(!AlfilW1.loadFromFile("piezas/alfilW.png")){
+            std::cerr<<"FAIL OPEN ALFIL WHITE"<<std::endl;
+        }
+
+        TEXTURE_ALFIL.push_back(AlfilW1);
+
+        sf::Texture AlfilB; //[0][2]
+        if(!AlfilB.loadFromFile("piezas/alfilB.png")){
+            std::cerr<<"FAIL OPEN ALFIL BLACK"<<std::endl;
+        }
+
+        TEXTURE_ALFIL.push_back(AlfilB);
+
+        sf::Texture AlfilB1; //[0][5]
+        if(!AlfilB1.loadFromFile("piezas/alfilB.png")){
+            std::cerr<<"FAIL OPEN ALFIL BLACK"<<std::endl;
+        }
+
+        TEXTURE_ALFIL.push_back(AlfilB1);
+    }
+
     void initTextureTower(){
         sf::Texture TowerW; //[7][0]
         if(!TowerW.loadFromFile("piezas/towerW.png")){

@@ -42,153 +42,123 @@ struct RULE{
         return false;
     }
 
+    void Killed(bool attackerTeam){
+        if(board1[new_x][new_y]==PIB::_ALFIL){
+            for(auto& A: OBJ_ALFIL){
+                if(!A.alive) continue;
+
+                if(A.x==new_x && A.y==new_y){
+                    if(A.team==attackerTeam) return;
+                    A.alive=false;
+                    break;
+                }
+            }
+        }else if(board1[new_x][new_y]==PIB::_TOWER){
+            for(auto& T: OBJ_TOWER){
+                if(!T.alive) continue;
+                        
+                if(T.x==new_x && T.y==new_y){
+                    if(T.team==attackerTeam) return;
+                    T.alive=false;
+                    break;
+                }
+            }
+        }else if(board1[new_x][new_y]==PIB::_HORSE){
+            for(auto& H: OBJ_HORSE){
+                if(!H.alive) continue;
+
+                if(H.x==new_x && H.y==new_y){
+                    if(H.team==attackerTeam) return;
+
+                    H.alive=false;
+                    break;
+                }
+            }
+        }else if(board1[new_x][new_y]==PIB::_KING){
+            for(auto& K: OBJ_KING){
+                if(!K.alive) continue;
+
+                if(K.x==new_x && K.y==new_y){
+                    if(K.team==attackerTeam) return;
+                    K.alive=false;
+                    break;
+                }
+            }
+        }else if(board1[new_x][new_y]==PIB::_QUEEN){
+            for(auto& Q: OBJ_QUEEN){
+                if(!Q.alive) continue;
+
+                if(Q.x==new_x && Q.y==new_y){
+                    if(Q.team==attackerTeam) return;
+                    Q.alive=false;
+                    break;
+                }
+            }
+        }
+    }
+
+    template<typename T, typename U, typename V>
+    void actualizationGeneral(std::vector<T>& OBJ, std::vector<U>& SPRITE, V _piece){
+        for(int i=0; i<OBJ.size(); i++){
+
+            if(!OBJ[i].alive) continue;
+
+            if(OBJ[i].x==pieceSelected.first &&
+               OBJ[i].y==pieceSelected.second){
+
+                Killed(OBJ[i].team);
+
+                board1[pre_x][pre_y]=PIB::EMPTY;
+                board[pre_x][pre_y]=Board::NONE;
+
+                OBJ[i].x=new_x;
+                OBJ[i].y=new_y;
+
+                OBJ[i].prePos={pre_x, pre_y};
+                OBJ[i].actualPos={new_x, new_y};
+
+                if(OBJ[i].team){
+                    board[new_x][new_y]=Board::WHITE;
+                    board1[new_x][new_y]=_piece;
+                }else{
+                    board[new_x][new_y]=Board::BLACK;
+                    board1[new_x][new_y]=_piece;
+                }
+                
+                SPRITE[i].setPosition(sf::Vector2f(250+CELL*new_y, 150+CELL*new_x));
+            }
+        }
+
+        possiblesMoving.clear();
+    }
+
     void actualization(){
-        if(board1[pieceSelected.first][pieceSelected.second]==PIB::_HORSE) actualizationHorse();
-        else if(board1[pieceSelected.first][pieceSelected.second]==PIB::_TOWER) actualizationTower();
-    }
-    void actualizationTower(){
-        for(int i=0; i<OBJ_TOWER.size(); i++){
-
-            if(!OBJ_TOWER[i].alive) continue;
-
-            if(OBJ_TOWER[i].x==pieceSelected.first &&
-               OBJ_TOWER[i].y==pieceSelected.second){
-
-                //buscar pieza enemiga en la casilla destino
-                if(board1[new_x][new_y]==PIB::_TOWER){
-                    for(auto& T: OBJ_TOWER){
-                        if(!T.alive) continue;
-                        
-                        if(T.x==new_x && T.y==new_y){
-                            if(T.team==OBJ_TOWER[i].team) return;
-                            T.alive=false;
-                            break;
-                        }
-                    }
-                }else if(board1[new_x][new_y]==PIB::_HORSE){
-                    for(std::size_t j=0; j<OBJ_HORSE.size(); ++j){
-                        if(j==static_cast<std::size_t>(i)) continue;
-
-                        auto& H=OBJ_HORSE[j];
-                        if(!H.alive) continue;
-
-                        if(H.x==new_x && H.y==new_y){
-                            if(H.team==OBJ_TOWER[i].team) return;
-
-                            H.alive=false;
-                            break;
-                        }
-                    }
-                }  
-
-                board1[pre_x][pre_y]=PIB::EMPTY;
-                board[pre_x][pre_y]=Board::NONE;
-
-                OBJ_TOWER[i].x=new_x;
-                OBJ_TOWER[i].y=new_y;
-
-                OBJ_TOWER[i].prePos={pre_x, pre_y};
-                OBJ_TOWER[i].actualPos={new_x, new_y};
-
-                if(OBJ_TOWER[i].team){
-                    board[new_x][new_y]=Board::WHITE;
-                    board1[new_x][new_y]=PIB::_TOWER;
-                }else{
-                    board[new_x][new_y]=Board::BLACK;
-                    board1[new_x][new_y]=PIB::_TOWER;
-                }
-                
-                SPRITE_TOWER[i].setPosition(sf::Vector2f(250+CELL*new_y, 150+CELL*new_x));
-            }
-        }
-
-        possiblesMoving.clear();
+        if(board1[pieceSelected.first][pieceSelected.second]==PIB::_HORSE) actualizationGeneral(OBJ_HORSE, SPRITE_HORSE, PIB::_HORSE);
+        else if(board1[pieceSelected.first][pieceSelected.second]==PIB::_TOWER) actualizationGeneral(OBJ_TOWER, SPRITE_TOWER, PIB::_TOWER);
+        else if(board1[pieceSelected.first][pieceSelected.second]==PIB::_ALFIL) actualizationGeneral(OBJ_ALFIL, SPRITE_ALFIL, PIB::_ALFIL);
+        else if(board1[pieceSelected.first][pieceSelected.second]==PIB::_KING) actualizationGeneral(OBJ_KING, SPRITE_KING, PIB::_KING);
+        else if(board1[pieceSelected.first][pieceSelected.second]==PIB::_QUEEN) actualizationGeneral(OBJ_QUEEN, SPRITE_QUEEN, PIB::_QUEEN);
     }
 
-    void actualizationHorse(){
-        for(int i=0; i<OBJ_HORSE.size(); i++){
-
-            if(!OBJ_HORSE[i].alive) continue;
-
-            if(OBJ_HORSE[i].x==pieceSelected.first &&
-               OBJ_HORSE[i].y==pieceSelected.second){
-
-                //buscar pieza enemiga en la casilla destino
-                if(board1[new_x][new_y]==PIB::_TOWER){
-                    for(auto& T: OBJ_TOWER){
-                        if(!T.alive) continue;
-                        
-                        if(T.x==new_x && T.y==new_y){
-                            if(T.team==OBJ_HORSE[i].team) return;
-                            T.alive=false;
-                            break;
-                        }
-                    }
-                }else if(board1[new_x][new_y]==PIB::_HORSE){
-                    for(std::size_t j=0; j<OBJ_HORSE.size(); ++j){
-                        if(j==static_cast<std::size_t>(i)) continue;
-
-                        auto& H=OBJ_HORSE[j];
-                        if(!H.alive) continue;
-
-                        if(H.x==new_x && H.y==new_y){
-                            if(H.team==OBJ_HORSE[i].team) return;
-
-                            H.alive=false;
-                            break;
-                        }
-                    }
-                } 
-
-                board1[pre_x][pre_y]=PIB::EMPTY;
-                board[pre_x][pre_y]=Board::NONE;
-
-                OBJ_HORSE[i].x=new_x;
-                OBJ_HORSE[i].y=new_y;
-
-                OBJ_HORSE[i].prePos={pre_x, pre_y};
-                OBJ_HORSE[i].actualPos={new_x, new_y};
-
-                if(OBJ_HORSE[i].team){
-                    board[new_x][new_y]=Board::WHITE;
-                    board1[new_x][new_y]=PIB::_HORSE;
-                }else{
-                    board[new_x][new_y]=Board::BLACK;
-                    board1[new_x][new_y]=PIB::_HORSE;
-                }
-                
-                SPRITE_HORSE[i].setPosition(sf::Vector2f(250+CELL*new_y, 150+CELL*new_x));
-            }
-        }
-
-        possiblesMoving.clear();
-    }
-
-    void calculatedHorse(){
-        int _row=newCoords.first;
-        int _col=newCoords.second;
-
-        for(auto& H: OBJ_HORSE){
-            if(H.alive &&
-               _row==H.actualPos.first && 
-               _col==H.actualPos.second) H.inspect();
-        }
-    }
-
-    void calculatedTower(){
-        int _row=newCoords.first;
-        int _col=newCoords.second;
-
-        for(auto& T: OBJ_TOWER){
-            if(T.alive &&
-               _row==T.actualPos.first && 
-               _col==T.actualPos.second) T.inspect();
+    template<typename T>
+    void calculatedGeneral(int& _row, int& _col,
+                           const std::vector<T>& _PIECES_){
+        for(auto& _X_: _PIECES_){
+            if(_X_.alive &&
+               _row==_X_.actualPos.first &&
+               _col==_X_.actualPos.second) _X_.inspect();
         }
     }
 
     void calculated(){
-        if(board1[pieceSelected.first][pieceSelected.second]==PIB::_HORSE) calculatedHorse();
-        else if(board1[pieceSelected.first][pieceSelected.second]==PIB::_TOWER) calculatedTower();
+        int _row=newCoords.first;
+        int _col=newCoords.second;
+
+        if(board1[pieceSelected.first][pieceSelected.second]==PIB::_HORSE) calculatedGeneral(_row, _col, OBJ_HORSE);
+        else if(board1[pieceSelected.first][pieceSelected.second]==PIB::_TOWER) calculatedGeneral(_row, _col, OBJ_TOWER);
+        else if(board1[pieceSelected.first][pieceSelected.second]==PIB::_ALFIL) calculatedGeneral(_row, _col, OBJ_ALFIL);
+        else if(board1[pieceSelected.first][pieceSelected.second]==PIB::_KING) calculatedGeneral(_row, _col, OBJ_KING);
+        else if(board1[pieceSelected.first][pieceSelected.second]==PIB::_QUEEN) calculatedGeneral(_row, _col, OBJ_QUEEN);
     }
 };
 
@@ -264,6 +234,14 @@ int main(){
         }
     }
     /**********************************************/
+    D.initTextureQueen();
+    initSpriteQueen(D);
+
+    D.initTextureKing();
+    initSpriteKing(D);
+
+    D.initTextureAlfil();
+    initSpriteAlfil(D);
 
     D.initTextureTower();
     initSpriteTower(D);
@@ -310,12 +288,11 @@ int main(){
         window.clear();
 
         for(auto& x: Boxes){ window.draw(x.box); }
-        for(int i=0; i<OBJ_TOWER.size(); i++){ 
-            if(OBJ_TOWER[i].alive) OBJ_TOWER[i].paint(window, SPRITE_TOWER[i]); 
-        }
-        for(int i=0; i<OBJ_HORSE.size(); i++){ 
-            if(OBJ_HORSE[i].alive) OBJ_HORSE[i].paint(window, SPRITE_HORSE[i]); 
-        }
+        for(int i=0; i<OBJ_KING.size(); i++){ if(OBJ_KING[i].alive) OBJ_KING[i].paint(window, SPRITE_KING[i]); }
+        for(int i=0; i<OBJ_ALFIL.size(); i++){ if(OBJ_ALFIL[i].alive) OBJ_ALFIL[i].paint(window, SPRITE_ALFIL[i]); }
+        for(int i=0; i<OBJ_TOWER.size(); i++){ if(OBJ_TOWER[i].alive) OBJ_TOWER[i].paint(window, SPRITE_TOWER[i]); }
+        for(int i=0; i<OBJ_HORSE.size(); i++){ if(OBJ_HORSE[i].alive) OBJ_HORSE[i].paint(window, SPRITE_HORSE[i]); }
+        for(int i=0; i<OBJ_QUEEN.size(); i++){ if(OBJ_QUEEN[i].alive) OBJ_QUEEN[i].paint(window, SPRITE_QUEEN[i]); }
 
         RE.coloredFuture(window);
 

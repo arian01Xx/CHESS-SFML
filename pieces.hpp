@@ -32,6 +32,86 @@ struct PIECE{
     }
 };
 
+struct QUEEN: PIECE{
+    QUEEN(int& _row, int& _col, sf::Texture& image, bool _team):
+        PIECE(_row, _col, image, _team){
+            actualPos.first=_row;
+            actualPos.second=_col;
+    }
+
+    void inspect() const{
+        //MOVIMIENTOS DE LA TORRE, DEL REY Y DEL ALFIL
+    }
+};
+
+struct KING: PIECE{
+    std::vector<int> R={-1,-1,-1,0,0,1,1,1};
+    std::vector<int> C={-1,0,1,-1,1,-1,0,1};
+
+    KING(int& _row, int& _col, sf::Texture& image, bool _team):
+        PIECE(_row, _col, image, _team){
+            actualPos.first=_row;
+            actualPos.second=_col;
+    }
+
+    void inspect() const{
+        for(int i=0; i<8; i++){
+            int new_x=newCoords.first+R[i];
+            int new_y=newCoords.second+C[i];
+
+            if(new_x>=0 && new_x<8 && 
+               new_y>=0 && new_y<8){
+                if(board[new_x][new_y]==Board::NONE){
+                    possiblesMoving.push_back({new_x, new_y});
+                    //continue;
+                }
+                if(board[new_x][new_y]!=(team ? Board::WHITE: Board::BLACK))
+                    possiblesMoving.push_back({new_x, new_y});
+            }
+        }
+    }
+};
+
+struct ALFIL: PIECE{
+    ALFIL(int& _row, int& _col, sf::Texture& image, bool _team): 
+        PIECE(_row, _col, image, _team){
+            actualPos.first=_row;
+            actualPos.second=_col;
+    }
+
+    void inspect() const{
+        constexpr int directions[4][2]={
+            {1,1},
+            {-1,-1},
+            {-1,1},
+            {1,-1}
+        };
+
+        int row=newCoords.first;
+        int col=newCoords.second;
+
+        for(const auto& dir: directions){
+            int dr=dir[0];
+            int dc=dir[1];
+
+            for(int i=1; i<8; ++i){
+                int r=row+dr*i;
+                int c=col+dc*i;
+
+                if(r<0 || r>=8 || c<0 || c>=8) break;
+                if(board[r][c]==Board::NONE){
+                    possiblesMoving.push_back({r,c});
+                    continue;
+                }
+
+                if(board[r][c]!=(team ? Board::WHITE: Board::BLACK))
+                    possiblesMoving.push_back({r,c});
+                break;
+            }
+        }
+    }
+};
+
 struct TOWER: PIECE{
     TOWER(int& _row, int& _col, sf::Texture& image, bool _team):
         PIECE(_row, _col, image, _team){
@@ -39,7 +119,7 @@ struct TOWER: PIECE{
             actualPos.second=_col;
     } 
 
-    void inspect(){
+    void inspect() const{
         int _i=newCoords.first;
         int _j=newCoords.second;
 
@@ -99,7 +179,7 @@ struct HORSE: PIECE{
             actualPos.second=_col;
     }
 
-    void inspect(){
+    void inspect() const{
         for(int i=0; i<8; i++){
             int _x=newCoords.first+inspect_row[i];
             int _y=newCoords.second+inspect_col[i];
@@ -122,6 +202,83 @@ struct HORSE: PIECE{
         }
     }
 };
+
+void initSpriteQueen(DOMAIN& D){
+    int seven=7, three=3, zero=0;
+
+    QUEEN QW(seven, three, TEXTURE_QUEEN[0], true);
+    board1[seven][three]=PIB::_QUEEN;
+    board[seven][three]=Board::WHITE;
+    sf::Sprite QueenWhite=QW.init(D);
+
+    OBJ_QUEEN.push_back(QW);
+    SPRITE_QUEEN.push_back(QueenWhite);
+
+    QUEEN QB(zero, three, TEXTURE_QUEEN[1], false);
+    board1[zero][three]=PIB::_QUEEN;
+    board[zero][three]=Board::WHITE;
+    sf::Sprite QueenBlack=QB.init(D);
+
+    OBJ_QUEEN.push_back(QB);
+    SPRITE_QUEEN.push_back(QueenBlack);
+}
+
+void initSpriteKing(DOMAIN& D){
+    int seven=7, four=4, zero=0;
+
+    KING KW(seven, four, TEXTURE_KING[0], true);
+    board1[seven][four]=PIB::_KING;
+    board[seven][four]=Board::WHITE;
+    sf::Sprite KingWhite=KW.init(D);
+
+    OBJ_KING.push_back(KW);
+    SPRITE_KING.push_back(KingWhite);
+
+    KING KB(zero, four, TEXTURE_KING[1], false);
+    board1[zero][four]=PIB::_KING;
+    board[zero][four]=Board::BLACK;
+    sf::Sprite KingBlack=KB.init(D);
+
+    OBJ_KING.push_back(KB);
+    SPRITE_KING.push_back(KingBlack);
+}
+
+void initSpriteAlfil(DOMAIN& D){
+    int seven=7, zero=0;
+    int two=2, five=5;
+
+    ALFIL AW(seven, two, TEXTURE_ALFIL[0], true);
+    board1[seven][two]=PIB::_ALFIL;
+    board[seven][two]=Board::WHITE;
+    sf::Sprite AlfilWhite=AW.init(D);
+
+    OBJ_ALFIL.push_back(AW);
+    SPRITE_ALFIL.push_back(AlfilWhite);
+
+    ALFIL AW1(seven, five, TEXTURE_ALFIL[1], true);
+    board1[seven][five]=PIB::_ALFIL;
+    board[seven][five]=Board::WHITE;
+    sf::Sprite AlfilWhite1=AW1.init(D);
+
+    OBJ_ALFIL.push_back(AW1);
+    SPRITE_ALFIL.push_back(AlfilWhite1);
+
+    ALFIL AB(zero, two, TEXTURE_ALFIL[2], false);
+    board1[zero][two]=PIB::_ALFIL;
+    board[zero][two]=Board::BLACK;
+    sf::Sprite AlfilBlack=AB.init(D);
+
+    OBJ_ALFIL.push_back(AB);
+    SPRITE_ALFIL.push_back(AlfilBlack);
+
+    ALFIL AB1(zero, five, TEXTURE_ALFIL[3], false);
+    board1[zero][five]=PIB::_ALFIL;
+    board[zero][five]=Board::BLACK;
+    sf::Sprite AlfilBlack1=AB1.init(D);
+
+    OBJ_ALFIL.push_back(AB1);
+    SPRITE_ALFIL.push_back(AlfilBlack1);
+}
 
 void initSpriteTower(DOMAIN& D){ //2
     int seven=7, zero=0;
