@@ -2,6 +2,8 @@
 
 #define PRINT std::cout
 #define END '\n'
+#define COLUMN_SCREEN 50
+#define ROW_SCREEN 150
 
 struct Box;
 struct HORSE;
@@ -9,6 +11,7 @@ struct TOWER;
 struct ALFIL;
 struct KING;
 struct QUEEN;
+struct PAWN;
 
 constexpr int TILE=6;
 constexpr int CELL=TILE*10;
@@ -20,6 +23,8 @@ std::vector<Box> Boxes;
 
 enum Board{ BLACK, WHITE, NONE };
 enum PIB{ EMPTY, _HORSE, _ALFIL, _TOWER, _PAWN, _QUEEN, _KING };
+
+Board currentTurn = Board::WHITE;
 
 struct Box{
     sf::RectangleShape box;
@@ -33,6 +38,10 @@ std::pair<int,int> newCoords; //row - col coordenadas convertidas
 std::vector<std::pair<int,int>> possiblesMoving; //row - col
 std::vector<std::vector<Board>> board(8, std::vector<Board>(8,Board::NONE));
 std::vector<std::vector<PIB>> board1(8, std::vector<PIB>(8, PIB::EMPTY));
+
+std::vector<sf::Texture> TEXTURE_PAWN;
+std::vector<sf::Sprite> SPRITE_PAWN;
+std::vector<PAWN> OBJ_PAWN;
 
 std::vector<sf::Texture> TEXTURE_QUEEN;
 std::vector<sf::Sprite> SPRITE_QUEEN;

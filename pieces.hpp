@@ -3,6 +3,7 @@
 
 #include <SFML/Window/Event.hpp>
 #include <SFML/Graphics.hpp>
+#include <algorithm>
 #include <iostream>
 #include <utility>
 #include <cassert>
@@ -32,15 +33,240 @@ struct PIECE{
     }
 };
 
+struct PAWN: PIECE{
+    int firstTime=0;
+
+    std::vector<int> _x={-1,-2}; //FIRST TIME WHITE
+    std::vector<int> _y={0,0};
+
+    std::vector<int> _x2={1,2}; //FIRST TIME BLACK
+    std::vector<int> _y2={0,0};
+
+    PAWN(int& _row, int& _col, sf::Texture& image, bool _team):
+        PIECE(_row, _col, image, _team){
+            actualPos.first=_row;
+            actualPos.second=_col;
+    }
+
+    void inspect(){
+        if(team && firstTime==0){
+            for(int i=0; i<2; i++){
+                int temp_x=newCoords.first+_x[i];
+                int temp_y=newCoords.second+_y[i];
+
+                if(temp_x>=0 && temp_x<8 && temp_y>=0 && temp_y<8 &&
+                   board[temp_x][temp_y]==Board::NONE)
+                    possiblesMoving.push_back({temp_x, temp_y});
+            }
+        }else if(team && firstTime!=0){
+            int temp_x=newCoords.first-1;
+            int temp_y=newCoords.second+1;
+
+            if(temp_x>=0 && temp_x<8 && 
+               temp_y>=0 && temp_y<8 &&
+               board[temp_x][temp_y]==Board::BLACK) 
+                possiblesMoving.push_back({temp_x, temp_y});
+
+            int temp_x2=newCoords.first-1;
+            int temp_y2=newCoords.second;
+
+            if(temp_x2>=0 && temp_x2<8 && 
+               temp_y2>=0 && temp_y2<8 &&
+               board[temp_x2][temp_y2]==Board::NONE)
+                possiblesMoving.push_back({temp_x2, temp_y2});
+
+            int temp_x3=newCoords.first-1;
+            int temp_y3=newCoords.second-1;
+
+            if(temp_x3>=0 && temp_x3<8 && 
+               temp_y3>=0 && temp_y3<8 &&
+               board[temp_x3][temp_y3]==Board::BLACK)
+                possiblesMoving.push_back({temp_x3, temp_y3});
+        }
+
+        if(!team && firstTime==0){
+            for(int i=0; i<2; i++){
+                int temp_x2=newCoords.first+_x2[i];
+                int temp_y2=newCoords.second+_y2[i];
+
+                if(temp_x2>=0 && temp_x2<8 && temp_y2>=0 && temp_y2<8 &&
+                   board[temp_x2][temp_y2]==Board::NONE)
+                    possiblesMoving.push_back({temp_x2, temp_y2});
+            }
+        }else if(!team && firstTime!=0){
+            int temp_x=newCoords.first+1;
+            int temp_y=newCoords.second+1;
+
+            if(temp_x>=0 && temp_x<8 &&
+               temp_y>=0 && temp_y<8 &&
+               board[temp_x][temp_y]==Board::WHITE)
+                possiblesMoving.push_back({temp_x, temp_y});
+
+            int temp_x2=newCoords.first+1;
+            int temp_y2=newCoords.second;
+
+            if(temp_x2>=0 && temp_x2<8 &&
+               temp_y2>=0 && temp_y2<8 &&
+               board[temp_x2][temp_y2]==Board::NONE)
+                possiblesMoving.push_back({temp_x2, temp_y2});
+
+            int temp_x3=newCoords.first+1;
+            int temp_y3=newCoords.second-1;
+
+            if(temp_x3>=0 && temp_x3<8 &&
+               temp_y3>=0 && temp_y3<8 &&
+               board[temp_x3][temp_y3]==Board::WHITE)
+                possiblesMoving.push_back({temp_x3, temp_y3});
+        }
+    }
+};
+
 struct QUEEN: PIECE{
+    std::vector<int> R={-1,-1,-1,0,0,1,1,1};
+    std::vector<int> C={-1,0,1,-1,1,-1,0,1};
+
     QUEEN(int& _row, int& _col, sf::Texture& image, bool _team):
         PIECE(_row, _col, image, _team){
             actualPos.first=_row;
             actualPos.second=_col;
     }
 
-    void inspect() const{
+    void inspectTower(){
+        int _i=newCoords.first;
+        int _j=newCoords.second;
+
+        //ABAJO
+        for(int r=_i+1; r<8; ++r){
+            if(board[r][_j]==Board::NONE){
+                possiblesMoving.push_back({r,_j});
+            }else{
+                if(board[r][_j]!=(team ? Board::WHITE : Board::BLACK)){
+                    std::pair<int,int> pos{r,_j};
+                    add(pos);
+                }
+                break;
+            }
+        }
+
+        //ARRIBA
+        for(int r=_i-1; r>=0; --r){
+            if(board[r][_j]==Board::NONE){
+                possiblesMoving.push_back({r,_j});
+            }else{
+                if(board[r][_j]!=(team ? Board::WHITE : Board::BLACK)){
+                    std::pair<int,int> pos{r,_j};
+                    add(pos);
+                }
+                break;
+            }
+        }
+
+        //DERECHA
+        for(int c = _j + 1; c < 8; ++c){
+            if(board[_i][c] == Board::NONE){
+                possiblesMoving.push_back({_i, c});
+            }else{
+                if(board[_i][c] != (team ? Board::WHITE : Board::BLACK)){
+                    std::pair<int,int> pos{_i,c};
+                    add(pos);
+                }
+                break;
+            }
+        }
+
+        //IZQUIERDA
+        for(int c = _j - 1; c >= 0; --c){
+            if(board[_i][c] == Board::NONE){
+                possiblesMoving.push_back({_i, c});
+            }else{
+                if(board[_i][c] != (team ? Board::WHITE : Board::BLACK)){
+                    std::pair<int,int> pos{_i,c};
+                    add(pos);
+                }
+                break;
+            }
+        }
+
+    }
+
+    void add(std::pair<int,int>& pos){
+        if(std::find(possiblesMoving.begin(),
+                     possiblesMoving.end(),
+                     pos)==possiblesMoving.end())
+            possiblesMoving.push_back(pos);
+    }
+
+    void inspectKing(){
+        for(int i=0; i<8; i++){
+            int new_x=newCoords.first+R[i];
+            int new_y=newCoords.second+C[i];
+
+            if(new_x>=0 && new_x<8 && 
+               new_y>=0 && new_y<8){
+                if(board[new_x][new_y]==Board::NONE){
+                    possiblesMoving.push_back({new_x, new_y});
+                    //continue;
+                }
+                if(board[new_x][new_y]!=(team ? Board::WHITE: Board::BLACK)){
+                    std::pair<int,int> pos{new_x,new_y};
+
+                    if(std::find(possiblesMoving.begin(),
+                                 possiblesMoving.end(),
+                                 pos)==possiblesMoving.end())
+                        possiblesMoving.push_back(pos);
+                }
+            }
+        }
+    }
+
+    void inspectAlfil(){
+        constexpr int directions[4][2]={
+            {1,1},
+            {-1,-1},
+            {-1,1},
+            {1,-1}
+        };
+
+        int row=newCoords.first;
+        int col=newCoords.second;
+
+        for(const auto& dir: directions){
+            int dr=dir[0];
+            int dc=dir[1];
+
+            for(int i=1; i<8; ++i){
+                int r=row+dr*i;
+                int c=col+dc*i;
+
+                if(r<0 || r>=8 || c<0 || c>=8) break;
+                if(board[r][c]==Board::NONE){
+                    std::pair<int,int> pos{r,c};
+
+                    if(std::find(possiblesMoving.begin(),
+                                 possiblesMoving.end(),
+                                 pos)==possiblesMoving.end())
+                        possiblesMoving.push_back(pos);
+                    continue;
+                }
+
+                if(board[r][c]!=(team ? Board::WHITE: Board::BLACK)){
+                    std::pair<int,int> pos{r,c};
+
+                    if(std::find(possiblesMoving.begin(),
+                                 possiblesMoving.end(),
+                                 pos)==possiblesMoving.end())
+                        possiblesMoving.push_back(pos);
+                }
+                break;
+            }
+        }
+    }
+
+    void inspect(){
         //MOVIMIENTOS DE LA TORRE, DEL REY Y DEL ALFIL
+        inspectTower();
+        inspectKing();
+        inspectAlfil();
     }
 };
 
@@ -54,7 +280,7 @@ struct KING: PIECE{
             actualPos.second=_col;
     }
 
-    void inspect() const{
+    void inspect(){
         for(int i=0; i<8; i++){
             int new_x=newCoords.first+R[i];
             int new_y=newCoords.second+C[i];
@@ -79,7 +305,7 @@ struct ALFIL: PIECE{
             actualPos.second=_col;
     }
 
-    void inspect() const{
+    void inspect(){
         constexpr int directions[4][2]={
             {1,1},
             {-1,-1},
@@ -119,7 +345,7 @@ struct TOWER: PIECE{
             actualPos.second=_col;
     } 
 
-    void inspect() const{
+    void inspect(){
         int _i=newCoords.first;
         int _j=newCoords.second;
 
@@ -179,7 +405,7 @@ struct HORSE: PIECE{
             actualPos.second=_col;
     }
 
-    void inspect() const{
+    void inspect(){
         for(int i=0; i<8; i++){
             int _x=newCoords.first+inspect_row[i];
             int _y=newCoords.second+inspect_col[i];
@@ -202,6 +428,30 @@ struct HORSE: PIECE{
         }
     }
 };
+
+void initSpritePawn(DOMAIN& D){
+    int six=6, one=1;
+
+    for(int i=0; i<8; i++){
+        PAWN PW(six, i, TEXTURE_PAWN[i], true);
+        board1[six][i]=PIB::_PAWN;
+        board[six][i]=Board::WHITE;
+        sf::Sprite PawnWhite=PW.init(D);
+
+        OBJ_PAWN.push_back(PW);
+        SPRITE_PAWN.push_back(PawnWhite);
+    }
+
+    for(int i=0; i<8; i++){
+        PAWN PB(one, i, TEXTURE_PAWN[8+i], false);
+        board1[one][i]=PIB::_PAWN;
+        board[one][i]=Board::BLACK;
+        sf::Sprite PawnBlack=PB.init(D);
+
+        OBJ_PAWN.push_back(PB);
+        SPRITE_PAWN.push_back(PawnBlack);
+    }
+}
 
 void initSpriteQueen(DOMAIN& D){
     int seven=7, three=3, zero=0;

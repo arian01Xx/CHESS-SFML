@@ -19,7 +19,7 @@ struct DOMAIN{
     void createBottom(sf::RenderWindow& window, int c, int r, sf::Color x){
         sf::RectangleShape bottom(sf::Vector2f(CELL, CELL));
         bottom.setFillColor(x);
-        bottom.setPosition(sf::Vector2f(250+CELL*c, 150+CELL*r));
+        bottom.setPosition(sf::Vector2f(COLUMN_SCREEN+CELL*c, ROW_SCREEN+CELL*r));
 
         Box _box;
         _box.box=bottom;
@@ -40,15 +40,35 @@ struct DOMAIN{
         float scaleY=static_cast<float>(CELL)/sizePiece.y;
 
         _piece.setScale({scaleX, scaleY});
-        _piece.setPosition(sf::Vector2f(250+CELL*j, 150+CELL*i));
+        _piece.setPosition(sf::Vector2f(COLUMN_SCREEN+CELL*j, ROW_SCREEN+CELL*i));
 
         return _piece;
     }
 
     std::pair<int,int> convertion(int& row, int& col){
-        int r=(row-150)/CELL;
-        int c=(col-250)/CELL;
+        int r=(row-ROW_SCREEN)/CELL;
+        int c=(col-COLUMN_SCREEN)/CELL;
         return {r,c};
+    }
+
+    void initTexturePawn(){
+        for(int i=0; i<8; i++){ 
+            sf::Texture PawnW; //[6][0->8]
+            if(!PawnW.loadFromFile("piezas/pawnW.png")){
+                std::cerr<<"FAIL OPEN PAWN WHITE"<<std::endl;
+            }
+
+            TEXTURE_PAWN.push_back(PawnW);
+        }
+
+        for(int i=0; i<8; i++){
+            sf::Texture PawnB; //[1][0->8]
+            if(!PawnB.loadFromFile("piezas/pawnB.png")){
+                std::cerr<<"FAIL OPEN PAWN BLACK"<<std::endl;
+            }
+
+            TEXTURE_PAWN.push_back(PawnB);
+        }
     }
 
     void initTextureQueen(){
