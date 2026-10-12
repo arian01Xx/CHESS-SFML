@@ -2,8 +2,11 @@
 
 #define PRINT std::cout
 #define END '\n'
-#define COLUMN_SCREEN 50
+
+#define COL_TEXT 50
+
 #define ROW_SCREEN 150
+#define COLUMN_SCREEN 50
 
 struct Box;
 struct HORSE;

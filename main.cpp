@@ -1,9 +1,11 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Graphics.hpp>
 #include <algorithm>
+#include <stdexcept>
 #include <iostream>
 #include <utility>
 #include <cassert>
+#include <string>
 #include <vector>
 
 #include "domain.hpp"
@@ -15,6 +17,31 @@
  __FUNCTION__
  __LINE__ estos dos para imprimir
  */
+
+/*
+ UI/
+│   ├── TextRenderer.hpp
+│   ├── SidePanel.hpp
+│   └── Buttons.hpp
+ */
+struct TEXT_RENDERING{
+    sf::Font font;
+
+    sf::Text initTextureLetters(const std::string & letters, int row){
+        if(!font.openFromFile("UI/main.ttf")){
+            throw std::runtime_error("ERROR DE CARGA DE LA FUENTE");
+        }
+
+        sf::Text text(font);
+        text.setString(letters);
+        text.setCharacterSize(30);
+        text.setFillColor(sf::Color(0,128,40));
+
+        text.setPosition(sf::Vector2f(COL_TEXT, row));
+
+        return text;
+    }
+};
 
 struct GAME{
     void Gaming(RULE& R){
@@ -76,6 +103,8 @@ int main(){
     DOMAIN D;
     RENDERING RE;
 
+    TEXT_RENDERING TXR;
+
     sf::RenderWindow window{
         sf::VideoMode({
             static_cast<unsigned>(TILE*D.col),
@@ -93,6 +122,13 @@ int main(){
             else D.createBottom(window, j, i, sf::Color(0,100,0));
         }
     }
+    /**********************************************/
+    std::string textMain="NEURAL'S NETWORK";
+    sf::Text Title=TXR.initTextureLetters(textMain, 20); //con eso ya deberia crearse un texto
+
+    std::string textMain1="G.D.INTELECTUAL";
+    sf::Text Title1=TXR.initTextureLetters(textMain1, 70);
+
     /**********************************************/
     D.initTexturePawn();
     initSpritePawn(D);
@@ -159,6 +195,9 @@ int main(){
         for(int i=0; i<OBJ_PAWN.size(); i++){ if(OBJ_PAWN[i].alive) OBJ_PAWN[i].paint(window, SPRITE_PAWN[i]); }
 
         RE.coloredFuture(window);
+
+        window.draw(Title);
+        window.draw(Title1);
 
         window.display();
     }
