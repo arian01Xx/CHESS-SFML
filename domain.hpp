@@ -51,6 +51,11 @@ struct DOMAIN{
         return {r,c};
     }
 
+    bool insideBoard(int r, int c){
+        return r>=0 && r<8 &&
+               c>=0 && c<8;
+    }
+
     void initTexturePawn(){
         for(int i=0; i<8; i++){ 
             sf::Texture PawnW; //[6][0->8]

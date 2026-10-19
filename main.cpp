@@ -24,28 +24,90 @@
 │   ├── SidePanel.hpp
 │   └── Buttons.hpp
  */
-struct TEXT_RENDERING{
+struct NEURAL_NETWORK{
+
+};
+
+struct TEXT_RENDERING{ //CARPETA UI
     sf::Font font;
 
-    sf::Text initTextureLetters(const std::string & letters, int row){
-        if(!font.openFromFile("UI/main.ttf")){
+    sf::Text initTextureLetters(const std::string & letters, int row, 
+                                int col, int size){
+        if(!font.openFromFile("UI/main.ttf"))
             throw std::runtime_error("ERROR DE CARGA DE LA FUENTE");
-        }
 
         sf::Text text(font);
         text.setString(letters);
-        text.setCharacterSize(30);
+        text.setCharacterSize(size);
         text.setFillColor(sf::Color(0,128,40));
 
-        text.setPosition(sf::Vector2f(COL_TEXT, row));
+        text.setPosition(sf::Vector2f(COL_TEXT+col, row));
 
         return text;
+    }
+
+    void buildTextBox(std::string& text, int row, int col, int size){
+        sf::Text Title=initTextureLetters(text, row, col, size);
+        textBoxes.push_back(Title);
+    }
+
+    void drawTextBox(sf::RenderWindow& window){
+        for(auto& x: textBoxes){
+            window.draw(x);
+        }
+    }
+
+    void drawBoxOfText(sf::RenderWindow& window){
+        for(auto& x: BoxForText){
+            window.draw(x);
+        }
+    }
+
+    void drawingBox(int row, int col){
+        sf::RectangleShape marco(sf::Vector2f(ANCHURA, ALTURA)); //TA CAGAO ESTO, anchura, altura
+        marco.setPosition(sf::Vector2f(COL_TEXT+col, row));
+
+        marco.setFillColor(sf::Color::Transparent);
+        marco.setOutlineColor(sf::Color::Green);
+        marco.setOutlineThickness(0.8f);
+
+        BoxForText.push_back(marco);
+    }
+
+    void minit(int i, int j){
+        drawingBox(i, j);
+        CB cb(i, j);
+        CBs.push_back(cb);
+        coordBoxes.push_back({i,j}); //FILA - COLUMNA
+    }
+
+    void CreationBoxes(){ //AQUI se crean tus botones donde quieras!!
+        std::string textMain="NEURAL'S NETWORK";
+        buildTextBox(textMain, 20, 0, 25); 
+
+        std::string textMain1="G.D.INTELECTUAL";
+        buildTextBox(textMain1, 70, 0, 25);
+
+        std::string boxTicTacToe="TIC-TAC\n-TOE";
+        buildTextBox(boxTicTacToe, 650, 0, 10);
+        minit(650, 0);
+
+        std::string boxChess="CHESS";
+        buildTextBox(boxChess, 650, 160, 10);
+        minit(650, 160);
+
+        std::string boxSnake="SNAKE";
+        buildTextBox(boxSnake, 650, 240, 10);
+        minit(650, 240);
+
+        std::string boxPong="PONG";
+        buildTextBox(boxPong, 650, 330, 10);
+        minit(650, 330);
     }
 };
 
 struct GAME{
-    void Gaming(RULE& R){
-        //NO HAY PIEZA SELECCIONADA
+    void Gaming(RULE& R){ //CHESS
         if(possiblesMoving.empty()){ 
             if(R.click()){
                 if(board[newCoords.first][newCoords.second]==currentTurn){
@@ -75,6 +137,51 @@ struct GAME{
         }
 
         possiblesMoving.clear();
+    }
+
+    void GamingTTT(){
+
+    }
+
+    void GamingSnake(){
+
+    }
+
+    void GamingPong(){
+
+    }
+
+    bool anyGameElection(std::pair<int,int> coords){
+        int row=coords.first;
+        int col=coords.second;
+
+        if(row>=CBs[0].x && 
+           row<CBs[0].x+ALTURA &&
+           col>=CBs[0].y+COL_TEXT && 
+           col<CBs[0].y+COL_TEXT+ANCHURA){
+            currentPlay=PLAY::TICTACTOE;
+            return true;
+        }else if(row>=CBs[1].x && 
+                row<CBs[1].x+ALTURA &&
+                col>=CBs[1].y+COL_TEXT && 
+                col<CBs[1].y+COL_TEXT+ANCHURA){
+            currentPlay=PLAY::CHESS;
+            return true;
+        }else if(row>=CBs[2].x && 
+                row<CBs[2].x+ALTURA &&
+                col>=CBs[2].y+COL_TEXT && 
+                col<CBs[2].y+COL_TEXT+ANCHURA){
+            currentPlay=PLAY::SNAKE;
+            return true;
+        }else if(row>=CBs[3].x && 
+                row<CBs[3].x+ALTURA &&
+                col>=CBs[3].y+COL_TEXT && 
+                col<CBs[3].y+COL_TEXT+ANCHURA){
+            currentPlay=PLAY::PONG;
+            return true;
+        }else return false;;
+
+        return true;
     }
 };
 
@@ -122,14 +229,9 @@ int main(){
             else D.createBottom(window, j, i, sf::Color(0,100,0));
         }
     }
-    /**********************************************/
-    std::string textMain="NEURAL'S NETWORK";
-    sf::Text Title=TXR.initTextureLetters(textMain, 20); //con eso ya deberia crearse un texto
 
-    std::string textMain1="G.D.INTELECTUAL";
-    sf::Text Title1=TXR.initTextureLetters(textMain1, 70);
+    TXR.CreationBoxes();
 
-    /**********************************************/
     D.initTexturePawn();
     initSpritePawn(D);
 
@@ -169,35 +271,38 @@ int main(){
                     col=mouseButtonPressed->position.x;
                     row=mouseButtonPressed->position.y;
 
-                    PRINT<<"------------------------"<<END;
-                    PRINT<<"COORDENADAS MOUSE"<<END;
-                    PRINT<<"col: "<<col<<" - row: "<<row<<END;
+                    if (G.anyGameElection({row, col})) continue;
 
                     newCoords=D.convertion(row, col);
 
-                    PRINT<<"-----------------------"<<END;
-                    PRINT<<"COORDENADAS ENTERIZADAS"<<END;
-                    PRINT<<"col: "<<newCoords.second<<" - row: "<<newCoords.first<<END;
+                    if(!D.insideBoard(newCoords.first, newCoords.second)) continue;
 
-                    G.Gaming(R);
+                    if(currentPlay==PLAY::CHESS) G.Gaming(R); //RULE TAMBIEN SOLO TIENE CHESS
+                    else if(currentPlay==PLAY::TICTACTOE) G.GamingTTT();
+                    else if(currentPlay==PLAY::SNAKE) G.GamingSnake();
+                    else if(currentPlay==PLAY::PONG) G.GamingPong();
+
+                    //G.Gaming(R);
                 }
             }
         }
 
         window.clear();
 
-        for(auto& x: Boxes){ window.draw(x.box); }
-        for(int i=0; i<OBJ_KING.size(); i++){ if(OBJ_KING[i].alive) OBJ_KING[i].paint(window, SPRITE_KING[i]); }
-        for(int i=0; i<OBJ_ALFIL.size(); i++){ if(OBJ_ALFIL[i].alive) OBJ_ALFIL[i].paint(window, SPRITE_ALFIL[i]); }
-        for(int i=0; i<OBJ_TOWER.size(); i++){ if(OBJ_TOWER[i].alive) OBJ_TOWER[i].paint(window, SPRITE_TOWER[i]); }
-        for(int i=0; i<OBJ_HORSE.size(); i++){ if(OBJ_HORSE[i].alive) OBJ_HORSE[i].paint(window, SPRITE_HORSE[i]); }
-        for(int i=0; i<OBJ_QUEEN.size(); i++){ if(OBJ_QUEEN[i].alive) OBJ_QUEEN[i].paint(window, SPRITE_QUEEN[i]); }
-        for(int i=0; i<OBJ_PAWN.size(); i++){ if(OBJ_PAWN[i].alive) OBJ_PAWN[i].paint(window, SPRITE_PAWN[i]); }
+        //aqui necesito poner condicionales if para cambiar pantalla
+        if(currentPlay==PLAY::CHESS){
+            for(auto& x: Boxes){ window.draw(x.box); }
+            for(int i=0; i<OBJ_KING.size(); i++){ if(OBJ_KING[i].alive) OBJ_KING[i].paint(window, SPRITE_KING[i]); }
+            for(int i=0; i<OBJ_ALFIL.size(); i++){ if(OBJ_ALFIL[i].alive) OBJ_ALFIL[i].paint(window, SPRITE_ALFIL[i]); }
+            for(int i=0; i<OBJ_TOWER.size(); i++){ if(OBJ_TOWER[i].alive) OBJ_TOWER[i].paint(window, SPRITE_TOWER[i]); }
+            for(int i=0; i<OBJ_HORSE.size(); i++){ if(OBJ_HORSE[i].alive) OBJ_HORSE[i].paint(window, SPRITE_HORSE[i]); }
+            for(int i=0; i<OBJ_QUEEN.size(); i++){ if(OBJ_QUEEN[i].alive) OBJ_QUEEN[i].paint(window, SPRITE_QUEEN[i]); }
+            for(int i=0; i<OBJ_PAWN.size(); i++){ if(OBJ_PAWN[i].alive) OBJ_PAWN[i].paint(window, SPRITE_PAWN[i]); }
+            RE.coloredFuture(window);
+        }
 
-        RE.coloredFuture(window);
-
-        window.draw(Title);
-        window.draw(Title1);
+        TXR.drawTextBox(window);
+        TXR.drawBoxOfText(window);
 
         window.display();
     }

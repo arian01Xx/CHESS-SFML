@@ -3,6 +3,9 @@
 #define PRINT std::cout
 #define END '\n'
 
+#define ANCHURA 65.f
+#define ALTURA 35.f
+
 #define COL_TEXT 50
 
 #define ROW_SCREEN 150
@@ -25,15 +28,24 @@ sf::Vector2i lastMouse;
 std::vector<Box> Boxes;
 
 enum Board{ BLACK, WHITE, NONE };
+enum PLAY{TICTACTOE, SNAKE, CHESS, PONG, NO_ELECTION};
 enum PIB{ EMPTY, _HORSE, _ALFIL, _TOWER, _PAWN, _QUEEN, _KING };
 
 Board currentTurn = Board::WHITE;
+PLAY currentPlay = PLAY::CHESS;
 
 struct Box{
     sf::RectangleShape box;
     sf::Color color;
     std::pair<int,int> coords;
 };
+
+struct CB{ 
+    int x, y; //FILA COLUMNA
+    CB(int _x, int _y): x(_x), y(_y) {}
+};
+
+std::vector<CB> CBs; //FILA - COLUMNA
 
 std::pair<int,int> pieceSelected; //row - col
 
@@ -65,3 +77,8 @@ std::vector<HORSE> OBJ_HORSE;
 std::vector<sf::Texture> TEXTURE_TOWER;
 std::vector<sf::Sprite> SPRITE_TOWER;
 std::vector<TOWER> OBJ_TOWER;
+
+//CAJAS DE TEXTO
+std::vector<sf::Text> textBoxes;
+std::vector<sf::RectangleShape> BoxForText;
+std::vector<std::pair<int,int>> coordBoxes;
