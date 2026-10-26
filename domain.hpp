@@ -16,6 +16,15 @@ struct DOMAIN{
     int row=board.size();
     int col=board[0].size();
 
+    void createTable(sf::RenderWindow& window){
+        for(int i=0; i<8; i++){
+            for(int j=0; j<8; j++){
+                if((i+j)%2==0) createBottom(window, j, i, sf::Color::White);
+                else createBottom(window, j, i, sf::Color(0,100,0));
+            }
+        }
+    }
+
     void createBottom(sf::RenderWindow& window, int c, int r, sf::Color x){
         sf::RectangleShape bottom(sf::Vector2f(CELL, CELL));
         bottom.setFillColor(x);
@@ -25,9 +34,8 @@ struct DOMAIN{
         _box.box=bottom;
         _box.color=x;
         _box.coords={c,r};
-        Boxes.push_back(_box);
 
-        window.draw(bottom);
+        Boxes.push_back(_box);
 
         window.draw(bottom);
     }
@@ -43,12 +51,6 @@ struct DOMAIN{
         _piece.setPosition(sf::Vector2f(COLUMN_SCREEN+CELL*j, ROW_SCREEN+CELL*i));
 
         return _piece;
-    }
-
-    std::pair<int,int> convertion(int& row, int& col){
-        int r=(row-ROW_SCREEN)/CELL;
-        int c=(col-COLUMN_SCREEN)/CELL;
-        return {r,c};
     }
 
     bool insideBoard(int r, int c){

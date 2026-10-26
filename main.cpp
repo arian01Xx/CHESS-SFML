@@ -13,16 +13,11 @@
 #include "pieces.hpp"
 #include "rules.hpp"
 
+#include "TicTacToe/domain.hpp"
+
 /*
  __FUNCTION__
  __LINE__ estos dos para imprimir
- */
-
-/*
- UI/
-│   ├── TextRenderer.hpp
-│   ├── SidePanel.hpp
-│   └── Buttons.hpp
  */
 struct NEURAL_NETWORK{
 
@@ -219,19 +214,11 @@ int main(){
         }), "CHESS"
     };
 
-    window.setFramerateLimit(50);
-
-    /**********************************************/
-    /*CREACION DEL TABLERO UNA VEZ*/
-    for(int i=0; i<8; i++){
-        for(int j=0; j<8; j++){
-            if((i+j)%2==0) D.createBottom(window, j, i, sf::Color::White);
-            else D.createBottom(window, j, i, sf::Color(0,100,0));
-        }
-    }
+    window.setFramerateLimit(50); 
 
     TXR.CreationBoxes();
 
+    //CHESS
     D.initTexturePawn();
     initSpritePawn(D);
 
@@ -249,6 +236,16 @@ int main(){
 
     D.initTextureHorse();
     initSpriteHorse(D);
+
+    D.createTable(window);
+
+    //CREATE TABLE TICTACTOE
+    TTT::DOMAIN domainTTT;
+    domainTTT.createTable(window);
+    
+    //CREATE SNAKE
+    
+    //CREATE PONG
 
     while(window.isOpen()){
         while(const std::optional event=window.pollEvent()){
@@ -273,16 +270,14 @@ int main(){
 
                     if (G.anyGameElection({row, col})) continue;
 
-                    newCoords=D.convertion(row, col);
+                    newCoords=convertion(row, col);
 
                     if(!D.insideBoard(newCoords.first, newCoords.second)) continue;
 
                     if(currentPlay==PLAY::CHESS) G.Gaming(R); //RULE TAMBIEN SOLO TIENE CHESS
-                    else if(currentPlay==PLAY::TICTACTOE) G.GamingTTT();
+                    else if(currentPlay==PLAY::TICTACTOE) G.GamingTTT(); //usa newCoords que esta en estado global
                     else if(currentPlay==PLAY::SNAKE) G.GamingSnake();
                     else if(currentPlay==PLAY::PONG) G.GamingPong();
-
-                    //G.Gaming(R);
                 }
             }
         }
@@ -299,6 +294,8 @@ int main(){
             for(int i=0; i<OBJ_QUEEN.size(); i++){ if(OBJ_QUEEN[i].alive) OBJ_QUEEN[i].paint(window, SPRITE_QUEEN[i]); }
             for(int i=0; i<OBJ_PAWN.size(); i++){ if(OBJ_PAWN[i].alive) OBJ_PAWN[i].paint(window, SPRITE_PAWN[i]); }
             RE.coloredFuture(window);
+        }else if(currentPlay==PLAY::TICTACTOE){
+            for(auto& x: BoxesTTT){ window.draw(x.box); }
         }
 
         TXR.drawTextBox(window);
