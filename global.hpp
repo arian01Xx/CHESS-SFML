@@ -91,13 +91,13 @@ enum BoardTTT{ EQUIS, CIRCLE, ANY };
 std::vector<std::vector<BoardTTT>> boardTTT(3, std::vector<BoardTTT>(3,BoardTTT::ANY));
 std::vector<Box> BoxesTTT;
 
-/*std::vector<sf::Texture> TEXTURE_EQUIS;
+std::vector<sf::Texture> TEXTURE_EQUIS;
 std::vector<sf::Sprite> SPRITE_EQUIS;
-std::vector<GENERAL_TTT> OBJ_EQUIS; //aqui no creo que sean clases distintas ya que tienen las mismas reglas
+std::vector<TTT::EQUIS> OBJ_EQUIS;
 
 std::vector<sf::Texture> TEXTURE_CIRCLE;
 std::vector<sf::Sprite> SPRITE_CIRCLE;
-std::vector<GENERAL_TTT> OBJ_CIRCLE;*/
+std::vector<TTT::CIRCLE> OBJ_CIRCLE;
 
 std::pair<int,int> convertion(int& row, int& col){
     int r=(row-ROW_SCREEN)/CELL;

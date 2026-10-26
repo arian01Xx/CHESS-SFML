@@ -1,12 +1,12 @@
-#ifndef DOMAIN_HPP
-#define DOMAIN_HPP
+#ifndef DOMAIN_TTT_HPP
+#define DOMAIN_TTT_HPP
 
 #include <SFML/Window/Event.hpp>
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <vector>
 
-#include "global.hpp"
+#include "../global.hpp"
 
 namespace TTT{
     struct DOMAIN{
@@ -39,6 +39,52 @@ namespace TTT{
             BoxesTTT.push_back(_box);
 
             window.draw(bottom);
+        }
+
+        bool insideBoard(int r, int c){
+            return r>=0 && r<3 &&
+                   c>=0 && c<8;
+        }
+
+        void initTextureEquis(){
+            sf::Texture Equis;
+            if(!Equis.loadFromFile("equis.png")){
+                std::cerr<<"FAIL OPEN EQUIS"<<std::endl;
+            }
+
+            TEXTURE_EQUIS.push_back(Equis);
+        }
+
+        void initTextureCircle(){
+            sf::Texture Circle;
+            if(!Circle.loadFromFile("circulo.png")){
+                std::cerr<<"FAIL OPEN CIRCULO"<<std::endl;
+            }
+
+            TEXTURE_CIRCLE.push_back(Circle);
+        }
+    };
+
+    struct PIECE{
+        int x, y;
+        sf::Texture* image;
+
+    };
+
+    struct EQUIS: TTT::PIECE{
+
+    };
+
+    struct CIRCLE: TTT::PIECE{
+
+    };
+
+    struct RULES{
+        bool click(){
+            if(boardTTT[newCoords.first][newCoords.second]==BoardTTT::ANY) return true;
+            else if(boardTTT[newCoords.first][newCoords.second]==BoardTTT::CIRCLE ||
+                    boardTTT[newCoords.first][newCoords.second]==BoardTTT::EQUIS)
+                return false;
         }
     };
 }

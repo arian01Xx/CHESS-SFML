@@ -134,8 +134,11 @@ struct GAME{
         possiblesMoving.clear();
     }
 
-    void GamingTTT(){
+    void GamingTTT(TTT::RULES& R){
+        if(R.click()){
 
+        }
+        return;
     }
 
     void GamingSnake(){
