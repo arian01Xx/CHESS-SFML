@@ -134,9 +134,17 @@ struct GAME{
         possiblesMoving.clear();
     }
 
-    void GamingTTT(TTT::RULES& R){
+    void GamingTTT(TTT::RULES& R, TTT::DOMAIN& D){
         if(R.click()){
-
+            if(R.emptySpace() && R.team){
+                D.initEquis();
+                R.team = !R.team;
+                R.findWinning();
+            }else if(R.emptySpace() && !R.team){
+                D.initCircle();
+                R.team = !R.team;
+                R.findWinning();
+            }
         }
         return;
     }
@@ -243,8 +251,12 @@ int main(){
     D.createTable(window);
 
     //CREATE TABLE TICTACTOE
-    TTT::DOMAIN domainTTT;
-    domainTTT.createTable(window);
+    TTT::DOMAIN DTTT;
+    DTTT.createTable(window);
+    DTTT.initSpriteEquis();
+    DTTT.initSpriteCircle();
+
+    TTT::RULES RTTT;
     
     //CREATE SNAKE
     
@@ -278,7 +290,7 @@ int main(){
                     if(!D.insideBoard(newCoords.first, newCoords.second)) continue;
 
                     if(currentPlay==PLAY::CHESS) G.Gaming(R); //RULE TAMBIEN SOLO TIENE CHESS
-                    else if(currentPlay==PLAY::TICTACTOE) G.GamingTTT(); //usa newCoords que esta en estado global
+                    else if(currentPlay==PLAY::TICTACTOE) G.GamingTTT(RTTT, DTTT); //usa newCoords que esta en estado global
                     else if(currentPlay==PLAY::SNAKE) G.GamingSnake();
                     else if(currentPlay==PLAY::PONG) G.GamingPong();
                 }
@@ -299,6 +311,8 @@ int main(){
             RE.coloredFuture(window);
         }else if(currentPlay==PLAY::TICTACTOE){
             for(auto& x: BoxesTTT){ window.draw(x.box); }
+            for(int i=0; i<SPRITE_EQUIS.size(); i++){ window.draw(SPRITE_EQUIS[i]); }
+            for(int i=0; i<SPRITE_CIRCLE.size(); i++){ window.draw(SPRITE_CIRCLE[i]); }
         }
 
         TXR.drawTextBox(window);

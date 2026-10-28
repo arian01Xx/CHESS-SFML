@@ -41,50 +41,106 @@ namespace TTT{
             window.draw(bottom);
         }
 
-        bool insideBoard(int r, int c){
-            return r>=0 && r<3 &&
-                   c>=0 && c<8;
+        sf::Sprite scale(sf::Texture& texture, int& j, int& i){
+            sf::Sprite _piece(texture);
+            sf::Vector2u sizePiece=texture.getSize();
+
+            float scaleX=static_cast<float>(CELL)/sizePiece.x;
+            float scaleY=static_cast<float>(CELL)/sizePiece.y;
+
+            _piece.setScale({scaleX, scaleY});
+            _piece.setPosition(sf::Vector2f(COLUMN_SCREEN+CELL*j, ROW_SCREEN+CELL*i));
+
+            return _piece;
         }
 
-        void initTextureEquis(){
+        bool insideBoard(int r, int c){
+            return r>=0 && r<3 &&
+                   c>=0 && c<3;
+        }
+
+        void initSpriteEquis(){
             sf::Texture Equis;
-            if(!Equis.loadFromFile("equis.png")){
+            if(!Equis.loadFromFile("TicTacToe/equis.png")){
                 std::cerr<<"FAIL OPEN EQUIS"<<std::endl;
             }
 
             TEXTURE_EQUIS.push_back(Equis);
         }
 
-        void initTextureCircle(){
+        void initSpriteCircle(){
             sf::Texture Circle;
-            if(!Circle.loadFromFile("circulo.png")){
+            if(!Circle.loadFromFile("TicTacToe/circulo.png")){
                 std::cerr<<"FAIL OPEN CIRCULO"<<std::endl;
             }
 
             TEXTURE_CIRCLE.push_back(Circle);
         }
-    };
 
-    struct PIECE{
-        int x, y;
-        sf::Texture* image;
+        void initEquis(){
+            int row=newCoords.first;
+            int col=newCoords.second;
 
-    };
+            boardTTT[row][col]=BoardTTT::EQUIS;
 
-    struct EQUIS: TTT::PIECE{
+            sf::Sprite EquiSprite=scale(TEXTURE_EQUIS.back(), col, row);
+            SPRITE_EQUIS.push_back(EquiSprite);
+        }
 
-    };
+        void initCircle(){
+            int row=newCoords.first;
+            int col=newCoords.second;
 
-    struct CIRCLE: TTT::PIECE{
+            boardTTT[row][col]=BoardTTT::CIRCLE;
 
-    };
+            sf::Sprite CircleSprite=scale(TEXTURE_CIRCLE.back(), col, row);
+            SPRITE_CIRCLE.push_back(CircleSprite);
+        }
+    }; 
 
     struct RULES{
+        bool team=true;
+
         bool click(){
             if(boardTTT[newCoords.first][newCoords.second]==BoardTTT::ANY) return true;
-            else if(boardTTT[newCoords.first][newCoords.second]==BoardTTT::CIRCLE ||
-                    boardTTT[newCoords.first][newCoords.second]==BoardTTT::EQUIS)
-                return false;
+            return false;
+        }
+
+        bool emptySpace(){
+            if(boardTTT[newCoords.first][newCoords.second]==BoardTTT::ANY) return true;
+            return false;
+        }
+
+        bool rowWinning(int& x){
+            auto user=boardTTT[newCoords.first][newCoords.second];
+
+            for(int i=0; i<3; i++){
+                if(user!=BoardTTT[x][i]) return false;
+            }
+
+            return true;
+        }
+
+        bool colWinning(int& y){
+
+        }
+
+        bool diagLeft(){
+
+        }
+
+        bool diagRight(){
+
+        }
+
+        void findWinning(){
+            //aqui se trabaja con BoardTTT
+            //en cada coordenada que inspeccione tanto fila, columna o diagonal
+            if(rowWinning(newCoords.first) ||
+               colWinning(newCoords.second) ||
+               diagLeft() || diagRight()){
+                //insertar imagen de felicidades al equipo ganador
+            }
         }
     };
 }

@@ -86,18 +86,18 @@ std::vector<std::pair<int,int>> coordBoxes;
 ////////////////////////
 // TICTACTOE ELEMENTS //
 ////////////////////////
-enum BoardTTT{ EQUIS, CIRCLE, ANY };
+enum BoardTTT{ ANY, EQUIS, CIRCLE };
 
 std::vector<std::vector<BoardTTT>> boardTTT(3, std::vector<BoardTTT>(3,BoardTTT::ANY));
 std::vector<Box> BoxesTTT;
 
 std::vector<sf::Texture> TEXTURE_EQUIS;
 std::vector<sf::Sprite> SPRITE_EQUIS;
-std::vector<TTT::EQUIS> OBJ_EQUIS;
 
 std::vector<sf::Texture> TEXTURE_CIRCLE;
 std::vector<sf::Sprite> SPRITE_CIRCLE;
-std::vector<TTT::CIRCLE> OBJ_CIRCLE;
+
+
 
 std::pair<int,int> convertion(int& row, int& col){
     int r=(row-ROW_SCREEN)/CELL;
